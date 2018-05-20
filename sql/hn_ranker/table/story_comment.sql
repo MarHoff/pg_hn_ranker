@@ -1,6 +1,6 @@
--- Table: hn_ranker.story_comment
+-- Table: @extschema@.story_comment
 
-CREATE TABLE hn_ranker.story_comment
+CREATE TABLE @extschema@.story_comment
 (
     id bigint NOT NULL,
     story_id bigint NOT NULL,
@@ -12,11 +12,11 @@ CREATE TABLE hn_ranker.story_comment
     kids bigint[],
     CONSTRAINT story_comment_pkey PRIMARY KEY (id),
     CONSTRAINT story_comment_parent_id_fkey FOREIGN KEY (parent_id)
-        REFERENCES hn_ranker.story_comment (id) MATCH SIMPLE
+        REFERENCES @extschema@.story_comment (id) MATCH SIMPLE
         ON UPDATE RESTRICT
         ON DELETE CASCADE,
     CONSTRAINT story_comment_story_id_fkey FOREIGN KEY (story_id)
-        REFERENCES hn_ranker.story (id) MATCH SIMPLE
+        REFERENCES @extschema@.story (id) MATCH SIMPLE
         ON UPDATE RESTRICT
         ON DELETE CASCADE
 )

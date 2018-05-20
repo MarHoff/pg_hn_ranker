@@ -1,9 +1,10 @@
--- Table: hn_ranker.story
+-- Table: @extschema@.story
 
-CREATE TABLE hn_ranker.story
+CREATE TYPE hn_ranker.story_status AS ENUM ('active', 'archived', 'archivable');
+CREATE TABLE @extschema@.story
 (
     id bigint NOT NULL,
-    status hn_ranker.story_status,
+    status @extschema@.story_status,
     title text COLLATE pg_catalog."default",
     by text COLLATE pg_catalog."default",
     hntime timestamp with time zone,

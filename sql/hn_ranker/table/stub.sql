@@ -8,7 +8,6 @@ DROP SEQUENCE IF EXISTS hn_ranker.run_id_seq;
 DROP TYPE IF EXISTS hn_ranker.story_status;
 
 CREATE SEQUENCE IF NOT EXISTS hn_ranker.run_id_seq AS bigint;
-CREATE TYPE hn_ranker.story_status AS ENUM ('active', 'archived', 'archivable');
 
 CREATE TABLE hn_ranker.run
 (
