@@ -19,7 +19,7 @@ usage:
 build : hn_ranker--dev.sql
 	@echo 'Building develloper version'
 
-hn_ranker--dev.sql : $(FRAPI_SHARED) #$(FRAPI_HN_RANKER)
+hn_ranker--dev.sql : $(FRAPI_SHARED) $(FUNCTION) $(TABLE)
 	cat $(FRAPI_SHARED) > $@ && cat $(FUNCTION) >> $@ && cat $(TABLE) >> $@
 
 #test:

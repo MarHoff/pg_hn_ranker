@@ -6,7 +6,8 @@ CREATE TABLE @extschema@.run_story
     story_id bigint NOT NULL,
     descendants integer,
     score integer,
-    hnrank integer,
+    toprank integer,
+    bestrank integer,
     CONSTRAINT run_story_pkey PRIMARY KEY (run_id, story_id),
     CONSTRAINT run_story_run_id_fkey FOREIGN KEY (run_id)
         REFERENCES @extschema@.run (id) MATCH SIMPLE
