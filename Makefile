@@ -2,9 +2,13 @@ EXTENSION = hn_ranker
 DATA = $(wildcard *.sql)
 
 FRAPI_SHARED := func_get_url
-FRAPI_SHARED := $(addprefix SQL/SHARED/, $(addsuffix .sql, $(FRAPI_SHARED)))
-#FRAPI_HN_RANKER := type_adresse_search func_adresse_search_format func_adresse_search_json func_adresse_reverse_json func_adresse_search func_adresse_reverse
-#FRAPI_HN_RANKER := $(addprefix SQL/ADRESSE/, $(addsuffix .sql, $(FRAPI_HN_RANKER)))
+FRAPI_SHARED := $(addprefix sql/shared/, $(addsuffix .sql, $(FRAPI_SHARED)))
+
+FUNCTION := func_best_json func_top_json func_item_json
+FUNCTION := $(addprefix sql/function/, $(addsuffix .sql, $(FUNCTION)))
+
+TABLE := run story run_story story_comment
+TABLE := $(addprefix sql/table/, $(addsuffix .sql, $(TABLE)))
 
 #TESTS = $(wildcard TEST/SQL/*.sql)
 
@@ -16,7 +20,7 @@ build : hn_ranker--dev.sql
 	@echo 'Building develloper version'
 
 hn_ranker--dev.sql : $(FRAPI_SHARED) #$(FRAPI_HN_RANKER)
-	cat $(FRAPI_SHARED) > $@ #&& cat $(FRAPI_HN_RANKER) >> $@
+	cat $(FRAPI_SHARED) > $@ && cat $(FUNCTION) >> $@ && cat $(TABLE) >> $@
 
 #test:
 #	pg_prove -v --pset tuples_only=1 $(TESTS)

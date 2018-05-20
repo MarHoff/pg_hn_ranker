@@ -8,8 +8,8 @@ CREATE OR REPLACE FUNCTION hn_ranker.top_json(
 $BODY$
 DECLARE
 frapi_query text;
-frapi_wait numeric DEFAULT 0.1;
-frapi_timeout numeric DEFAULT 10;
+frapi_wait numeric DEFAULT 0.01;
+frapi_timeout numeric DEFAULT 5;
 frapi_result jsonb;
 BEGIN
 
