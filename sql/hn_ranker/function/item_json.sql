@@ -1,7 +1,7 @@
 -- Function: item_json(text, integer, boolean, numeric, numeric, text, text, text)
 
 CREATE OR REPLACE FUNCTION @extschema@.item_json(
-    id integer
+    id bigint
 )
   RETURNS jsonb AS
 $BODY$
@@ -41,4 +41,6 @@ RETURN frapi_result;
 
 END
 $BODY$
-  LANGUAGE plpgsql VOLATILE;
+  LANGUAGE plpgsql VOLATILE
+  PARALLEL SAFE
+  COST 2000;
