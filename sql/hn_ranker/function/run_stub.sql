@@ -29,4 +29,14 @@ GROUP BY run_id, story_id
 ORDER BY toprank;
 */
 set force_parallel_mode to true;
-SELECT *, hn_ranker.item_json(story_id) FROM hn_ranker.run_story WHERE toprank <= 100 AND run_id=currval('hn_ranker.run_id_seq');
+WITH tu AS (
+  SELECT run_id, story_id, hn_ranker.item_json(story_id) item_json FROM hn_ranker.run_story
+  WHERE toprank <= 6 AND run_id=currval('hn_ranker.run_id_seq')
+)
+UPDATE hn_ranker.run_story u SET 
+descendants=(item_json ->> 'descendants')::integer,
+score=(item_json ->> 'score')::integer
+FROM tu WHERE tu.run_id=u.run_id AND tu.story_id=u.story_id
+RETURNING u.*
+
+SELECT * FRO
