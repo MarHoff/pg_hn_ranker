@@ -2,7 +2,7 @@
 
 CREATE OR REPLACE FUNCTION @extschema@.new_json(
 )
-  RETURNS jsonb AS
+  RETURNS jsonb AS    
 $BODY$
 DECLARE
 frapi_query text;
