@@ -3,9 +3,9 @@
 -- DROP FUNCTION @extschema@.get_url(text, numeric, numeric, integer);
 
 CREATE OR REPLACE FUNCTION @extschema@.get_url(
-    url text,
-    wait numeric,
-    timeout numeric,
+    url hn_ranker.url,
+    wait numeric DEFAULT 0,
+    timeout numeric DEFAULT 5,
     tries integer DEFAULT 3)
   RETURNS text AS
 $BODY$

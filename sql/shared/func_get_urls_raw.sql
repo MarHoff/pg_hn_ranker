@@ -4,9 +4,9 @@
 
 CREATE OR REPLACE FUNCTION @extschema@.get_urls_raw
 (
-    url text,
-    wait numeric,
-    timeout numeric,
+    url_tupple text,
+    wait numeric DEFAULT 0,
+    timeout numeric DEFAULT 5,
     tries integer DEFAULT 3,
     workers integer DEFAULT 10,
     delimiter text DEFAULT '@frapi_token@'
