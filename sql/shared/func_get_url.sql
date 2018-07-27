@@ -3,7 +3,7 @@
 -- DROP FUNCTION @extschema@.get_url(text, numeric, numeric, integer);
 
 CREATE OR REPLACE FUNCTION @extschema@.get_url(
-    url hn_ranker.url,
+    url @extschema@.url,
     wait numeric DEFAULT 0,
     timeout numeric DEFAULT 5,
     tries integer DEFAULT 3)

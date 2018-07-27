@@ -1,7 +1,7 @@
 EXTENSION = hn_ranker
 DATA = $(wildcard *.sql)
 
-FRAPI_SHARED := func_is_url func_is_url_array domain_url domain_url_array func_get_url func_get_urls_raw
+FRAPI_SHARED := func_is_url func_is_url_array func_is_url_shlist domain_url domain_url_array domain_url_shlist func_get_url func_get_urls_raw func_get_urls
 FRAPI_SHARED := $(addprefix sql/shared/, $(addsuffix .sql, $(FRAPI_SHARED)))
 
 FUNCTION := max_id best_json top_json new_json item_json

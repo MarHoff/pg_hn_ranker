@@ -4,7 +4,7 @@
 
 CREATE OR REPLACE FUNCTION @extschema@.get_urls_raw
 (
-    url_tupple text,
+    url_shlist @extschema@.url_shlist ,
     wait numeric DEFAULT 0,
     timeout numeric DEFAULT 5,
     tries integer DEFAULT 3,
