@@ -6,38 +6,38 @@ CREATE OR REPLACE FUNCTION @extschema@.item_json(
   RETURNS jsonb AS
 $BODY$
 DECLARE
-frapi_query text;
-frapi_wait numeric DEFAULT 0.01;
-frapi_timeout numeric DEFAULT 5;
-frapi_result jsonb;
+wget_query text;
+wget_wait numeric DEFAULT 0.01;
+wget_timeout numeric DEFAULT 5;
+wget_result jsonb;
 
-frapi_q text DEFAULT '';
+wget_id text;
 BEGIN
 
 
-frapi_q := "id"::text;
+wget_id := "id"::text;
 
-frapi_query :='https://hacker-news.firebaseio.com/v0/item/'||frapi_q||'.json';
-RAISE DEBUG 'frapi_query : %', frapi_query;
-
-
-frapi_result := @extschema@.get_url(frapi_query,frapi_wait,frapi_timeout)::jsonb;
-
-RAISE DEBUG 'score : %', (SELECT frapi_result -> 'score');
-RAISE DEBUG 'by : %', (SELECT frapi_result -> 'by');
-RAISE DEBUG 'id : %', (SELECT frapi_result -> 'id');
-RAISE DEBUG 'url : %', (SELECT frapi_result -> 'url');
-RAISE DEBUG 'type : %', (SELECT frapi_result -> 'type');
-RAISE DEBUG 'time : %', (SELECT frapi_result -> 'time');
-RAISE DEBUG 'descendants : %', (SELECT frapi_result -> 'descendants');
-RAISE DEBUG 'title : %', (SELECT frapi_result -> 'title');
-RAISE DEBUG 'kids : %', (SELECT frapi_result -> 'kids');
-RAISE DEBUG 'text : %', (SELECT frapi_result -> 'text');
-RAISE DEBUG 'parent : %', (SELECT frapi_result -> 'parent');
+wget_query :='https://hacker-news.firebaseio.com/v0/item/'||wget_id||'.json';
+RAISE DEBUG 'wget_query : %', wget_query;
 
 
+wget_result := wget_url(wget_query,wget_wait,wget_timeout)::jsonb;
 
-RETURN frapi_result;
+RAISE DEBUG 'score : %', (SELECT wget_result -> 'score');
+RAISE DEBUG 'by : %', (SELECT wget_result -> 'by');
+RAISE DEBUG 'id : %', (SELECT wget_result -> 'id');
+RAISE DEBUG 'url : %', (SELECT wget_result -> 'url');
+RAISE DEBUG 'type : %', (SELECT wget_result -> 'type');
+RAISE DEBUG 'time : %', (SELECT wget_result -> 'time');
+RAISE DEBUG 'descendants : %', (SELECT wget_result -> 'descendants');
+RAISE DEBUG 'title : %', (SELECT wget_result -> 'title');
+RAISE DEBUG 'kids : %', (SELECT wget_result -> 'kids');
+RAISE DEBUG 'text : %', (SELECT wget_result -> 'text');
+RAISE DEBUG 'parent : %', (SELECT wget_result -> 'parent');
+
+
+
+RETURN wget_result;
 
 END
 $BODY$

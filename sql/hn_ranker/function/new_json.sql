@@ -5,21 +5,21 @@ CREATE OR REPLACE FUNCTION @extschema@.new_json(
   RETURNS jsonb AS    
 $BODY$
 DECLARE
-frapi_query text;
-frapi_wait numeric DEFAULT 0.01;
-frapi_timeout numeric DEFAULT 5;
-frapi_result jsonb;
+wget_query text;
+wget_wait numeric DEFAULT 0.01;
+wget_timeout numeric DEFAULT 5;
+wget_result jsonb;
 BEGIN
 
-frapi_query :='https://hacker-news.firebaseio.com/v0/newstories.json';
-RAISE DEBUG 'frapi_query : %', frapi_query;
+wget_query :='https://hacker-news.firebaseio.com/v0/newstories.json';
+RAISE DEBUG 'wget_query : %', wget_query;
 
 
-frapi_result := @extschema@.get_url(frapi_query,frapi_wait,frapi_timeout)::jsonb;
+wget_result := wget_url(wget_query,wget_wait,wget_timeout)::jsonb;
 
-RAISE DEBUG 'New : %', (SELECT frapi_result);
+RAISE DEBUG 'New : %', (SELECT wget_result);
 
-RETURN frapi_result;
+RETURN wget_result;
 
 END
 $BODY$

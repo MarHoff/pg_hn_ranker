@@ -3,4 +3,4 @@ comment = 'Side project to gather data about hn post ranking evolution'
 default_version = 'dev'
 relocatable = false
 schema = 'hn_ranker'
-requires = 'plsh'
+requires = 'plsh, pmwget'

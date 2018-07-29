@@ -1,8 +1,6 @@
 EXTENSION = hn_ranker
 DATA = $(wildcard *.sql)
 
-FRAPI_SHARED := func_is_url func_is_url_array func_is_url_shlist domain_url domain_url_array domain_url_shlist func_get_url func_get_urls_raw func_get_urls
-FRAPI_SHARED := $(addprefix sql/shared/, $(addsuffix .sql, $(FRAPI_SHARED)))
 
 FUNCTION := max_id best_json top_json new_json item_json
 FUNCTION := $(addprefix sql/hn_ranker/function/, $(addsuffix .sql, $(FUNCTION)))
@@ -19,8 +17,8 @@ usage:
 build : hn_ranker--dev.sql
 	@echo 'Building develloper version'
 
-hn_ranker--dev.sql : $(FRAPI_SHARED) $(FUNCTION) $(TABLE)
-	cat $(FRAPI_SHARED) > $@ && cat $(FUNCTION) >> $@ && cat $(TABLE) >> $@
+hn_ranker--dev.sql : $(FUNCTION) $(TABLE)
+	cat $(FUNCTION) > $@ && cat $(TABLE) >> $@
 
 #test:
 #	pg_prove -v --pset tuples_only=1 $(TESTS)
