@@ -2,7 +2,7 @@ EXTENSION = hn_ranker
 DATA = $(wildcard *.sql)
 
 
-FUNCTION := max_id best_json top_json new_json item_json
+FUNCTION := max_id best_json top_json new_json item_json items_json
 FUNCTION := $(addprefix sql/hn_ranker/function/, $(addsuffix .sql, $(FUNCTION)))
 
 TABLE := run story run_story story_comment
