@@ -3,21 +3,20 @@ DATA = $(wildcard *.sql)
 
 
 FUNCTION := max_id best_json top_json new_json item_json items_json
-FUNCTION := $(addprefix sql/hn_ranker/function/, $(addsuffix .sql, $(FUNCTION)))
+FUNCTION := $(addprefix sql/function/, $(addsuffix .sql, $(FUNCTION)))
 
 TABLE := run story run_story story_comment
-TABLE := $(addprefix sql/hn_ranker/table/, $(addsuffix .sql, $(TABLE)))
+TABLE := $(addprefix sql/table/, $(addsuffix .sql, $(TABLE)))
 
 #TESTS = $(wildcard TEST/SQL/*.sql)
 
 usage:
 	@echo 'pg_hn_ranker usage : "make install" to instal the extension, "make build" to build dev version against source SQL'
 
-.PHONY : build
 build : hn_ranker--dev.sql
-	@echo 'Building develloper version'
 
 hn_ranker--dev.sql : $(FUNCTION) $(TABLE)
+	@echo 'Building develloper version'
 	cat $(FUNCTION) > $@ && cat $(TABLE) >> $@
 
 #test:
