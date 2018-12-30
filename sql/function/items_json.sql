@@ -41,18 +41,18 @@ tget AS (
       i_timeout := 5,
       i_tries := 1,
       i_waitretry := 0,
-      i_parallel_jobs := 10,
+      i_parallel_jobs := 75,
       i_delimiter := '@wget_token@'::text,
       i_delay := 0,
       r_min_latency := 0,
       r_timeout := 5,
       r_tries := 1,
       r_waitretry := 0,
-      r_parallel_jobs := 10,
+      r_parallel_jobs := 20,
       r_delimiter := '@wget_token@'::text,
-      r_delay := 0,
+      r_delay := 5,
       batch_size := 2000,
-      batch_retries := 1,
+      batch_retries := 2,
       batch_retries_failrate := 0.05
     )
 )

@@ -17,8 +17,8 @@ wget_result := wget_url(
 	url := wget_query,
   min_latency := 0,
   timeout := 5,
-  tries := 3,
-  waitretry := 0
+  tries := 5,
+  waitretry := 1
   )::jsonb;
 
 RAISE DEBUG 'Best : %', (SELECT wget_result);
