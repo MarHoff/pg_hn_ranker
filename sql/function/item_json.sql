@@ -17,7 +17,7 @@ BEGIN
 
 wget_id := "id"::text;
 
-wget_query :='https://hacker-news.firebaseio.com/v0/item/'||wget_id||'.json';
+wget_query := format('https://hacker-news.firebaseio.com/v0/item/%s.json',wget_id);
 RAISE DEBUG 'wget_query : %', wget_query;
 
 
