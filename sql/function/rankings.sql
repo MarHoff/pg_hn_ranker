@@ -1,5 +1,5 @@
 -- Function: ranking(text, integer, boolean, numeric, numeric, text, text, text)
-CREATE TYPE hn_ranker.ranking AS ENUM ('beststories','newstories','topstories');
+CREATE TYPE hn_ranker.ranking AS ENUM ('topstories','beststories','newstories');
 CREATE OR REPLACE FUNCTION @extschema@.rankings(
 	ranking hn_ranker.ranking
 )

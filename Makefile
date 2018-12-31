@@ -4,7 +4,7 @@ DATA = $(wildcard *.sql)
 FUNCTION := max_id rankings item_json items_json
 FUNCTION := $(addprefix sql/function/, $(addsuffix .sql, $(FUNCTION)))
 
-TABLE := run story run_story story_comment
+TABLE := run story run_story
 TABLE := $(addprefix sql/table/, $(addsuffix .sql, $(TABLE)))
 
 #TESTS = $(wildcard TEST/SQL/*.sql)
