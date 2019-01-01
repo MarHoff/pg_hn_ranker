@@ -7,7 +7,8 @@ CREATE TABLE @extschema@.run_story
     topstories_rank integer,
     beststories_rank integer,
     newstories_rank integer,
-    content jsonb,
+    payload jsonb,
+    ts_payload timestamp with time zone,
     CONSTRAINT run_story_pkey PRIMARY KEY (run_id, story_id),
     CONSTRAINT run_story_run_id_fkey FOREIGN KEY (run_id)
         REFERENCES @extschema@.run (id) MATCH SIMPLE
