@@ -1,6 +1,5 @@
 -- Table: @extschema@.story
 
-CREATE TYPE hn_ranker.story_status AS ENUM ('new','hot','tepid','cold','frozen');
 CREATE TABLE @extschema@.story
 (
     id bigint NOT NULL,

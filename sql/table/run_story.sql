@@ -7,6 +7,7 @@ CREATE TABLE @extschema@.run_story
     topstories_rank integer,
     beststories_rank integer,
     newstories_rank integer,
+    status hn_ranker.story_status,
     payload jsonb,
     ts_payload timestamp with time zone,
     CONSTRAINT run_story_pkey PRIMARY KEY (run_id, story_id),
