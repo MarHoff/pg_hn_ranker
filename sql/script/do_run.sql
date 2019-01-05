@@ -99,10 +99,30 @@ WITH
     FROM classify_run_story
     WHERE
       status <= 'hot' OR
-      (status = 'tepid' AND last_run_story_age >= '5 second'::interval) OR --'59 min'::interval) OR
-      (status = 'cooling' AND last_run_story_age >= '10 second'::interval) OR --'1 days'::interval) OR
-      (status = 'cold' AND last_run_story_age >= '15 seconds'::interval) OR --'7 days'::interval) OR
-      (status = 'frozen' AND last_run_story_age >= '30 seconds'::interval) --'1 month'::interval)    
+      (status = 'tepid' AND last_run_story_age >= '15 second'::interval) OR --'59 min'::interval) OR
+      (status = 'cooling' AND last_run_story_age >= '30 second'::interval) OR --'1 days'::interval) OR
+      (status = 'cold' AND last_run_story_age >= '60 seconds'::interval) OR --'7 days'::interval) OR
+      (status = 'frozen' AND last_run_story_age >= '180 seconds'::interval) --'1 month'::interval)
+  ),
+  wget_run_story AS (
+  SELECT 
+  filter_run_story.run_id,
+  filter_run_story.story_id,
+  filter_run_story.topstories_rank,
+  filter_run_story.beststories_rank,
+  filter_run_story.newstories_rank,
+  filter_run_story.status,
+  (items.payload ->> 'score')::integer score,
+  (items.payload ->> 'descendants')::integer descendants,
+  /*CASE
+  WHEN items.payload IS NULL THEN NULL
+  WHEN items.payload - '{"descendants","score"}'::text[] = filter_run_story.last_run_story_payload THEN NULL
+  ELSE items.payload - '{"descendants","score"}'::text[] 
+  END::jsonb*/
+  items.payload payload,
+  items.ts_end ts_payload
+  FROM filter_run_story LEFT JOIN hn_ranker.items((SELECT array_agg(story_id) FROM filter_run_story))
+  ON filter_run_story.story_id=items.id
   )
   
   
@@ -113,39 +133,23 @@ INSERT INTO hn_ranker.run_story(
   topstories_rank,
   beststories_rank,
   newstories_rank,
-  status
-  )
+  status,
+  score,
+  descendants,
+  payload,
+  ts_payload
+)
   SELECT
   run_id,
   story_id,
   topstories_rank,
   beststories_rank,
   newstories_rank,
-  status
-  FROM filter_run_story;
+  status,
+  score,
+  descendants,
+  payload,
+  ts_payload
+  FROM wget_run_story;
 
 SELECT * FROM hn_ranker.run_story WHERE run_id=(SELECT last_value FROM hn_ranker.run_id_seq) ORDER BY status ,topstories_rank,beststories_rank,newstories_rank;
-  
-                                                              
-                                                              
-/*INSERT INTO hn_ranker.story(id, status)
-  WITH
-    current_run AS (SELECT * FROM hn_ranker.run_story WHERE run_id=currval('hn_ranker.run_id_seq'::regclass))
-  SELECT
-    COALESCE(story.id, current_run.story_id) as id,
-    CASE
-      WHEN story.id IS NULL THEN 'new'
-      WHEN current_run.topstories_rank <= 200 OR current_run.newstories_rank <= 500 OR current_run.beststories_rank <= 0 THEN 'hot'
-      WHEN current_run.topstories_rank <= 500 OR current_run.newstories_rank <= 500 OR current_run.beststories_rank <= 50 THEN 'tepid'
-      WHEN current_run.topstories_rank IS NOT NULL OR current_run.newstories_rank IS NOT NULL OR current_run.beststories_rank IS NOT NULL THEN 'cold'
-      ELSE 'frozen'
-    END::hn_ranker.story_status as status
-  FROM hn_ranker.story FULL OUTER JOIN current_run
-    ON current_run.story_id=story.id
-ON CONFLICT (id)
-  DO UPDATE SET status=EXCLUDED.status
-;
-
-SELECT status, count(*) FROM hn_ranker.story
-GROUP BY status
-ORDER BY status;*/
