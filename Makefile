@@ -4,7 +4,7 @@ DATA = $(wildcard *.sql)
 DOMAIN := ranking story_status
 DOMAIN := $(addprefix sql/domain/, $(addsuffix .sql, $(DOMAIN)))
 
-FUNCTION := max_id rankings item_json items_json
+FUNCTION := max_id rankings item_json items
 FUNCTION := $(addprefix sql/function/, $(addsuffix .sql, $(FUNCTION)))
 
 TABLE := run story run_story

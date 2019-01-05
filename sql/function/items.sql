@@ -1,6 +1,6 @@
--- FUNCTION: hn_ranker.items_json(bigint[])
+-- FUNCTION: hn_ranker.items(bigint[])
 
-CREATE OR REPLACE FUNCTION hn_ranker.items_json(
+CREATE OR REPLACE FUNCTION hn_ranker.items(
   id_array bigint[]
 )
 RETURNS TABLE (
