@@ -6,7 +6,7 @@ CREATE OR REPLACE FUNCTION @extschema@.rankings(
 RETURNS TABLE (
   ranking @extschema@.ranking,
   url url,
-  payload jsonb,
+  ids bigint[],
   ts_end timestamptz,
   duration double precision,
   batch bigint,
@@ -56,9 +56,10 @@ tget AS (
       batch_retries_failrate := 0.05
     )
 )
-SELECT tid id, tsel.url::url, tget.payload::jsonb, tget.ts_end, tget.duration, tget.batch, tget.retries, tget.batch_failrate
-FROM tsel LEFT JOIN tget ON tsel.url=tget.url
-AND tget.payload is NOT NULL;
+SELECT tid id, tsel.url::url, conv.ids::bigint[], tget.ts_end, tget.duration, tget.batch, tget.retries, tget.batch_failrate
+FROM tsel
+LEFT JOIN tget ON tsel.url=tget.url
+LEFT JOIN LATERAL (SELECT array_agg(id::bigint) ids FROM jsonb_array_elements_text(tget.payload::jsonb) WITH ORDINALITY AS a(id, hn_rank)) conv ON true;
 
 END
 

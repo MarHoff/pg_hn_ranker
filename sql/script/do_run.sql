@@ -3,14 +3,17 @@ INSERT INTO hn_ranker.run(
 	topstories,
 	beststories,
 	newstories,
-	max_id
+	ts_end,
+  failed
   )
-	SELECT
-  	now() ts_run,
-  	hn_ranker.rankings('topstories') topstories,
-  	hn_ranker.rankings('beststories') beststories,
-  	hn_ranker.rankings('newstories') newstories,
-  	hn_ranker.max_id() max_id
+SELECT
+  now() ts_run,
+  max(ids) FILTER (WHERE ranking ='topstories') as topstories,
+  max(ids) FILTER (WHERE ranking ='beststories') as beststories,
+  max(ids) FILTER (WHERE ranking ='newstories') as newstories,
+  max(ts_end) as ts_end,
+  jsonb_object_agg(ranking,row_to_json(rankings.*)) FILTER (WHERE ids IS NULL) AS failed
+  FROM hn_ranker.rankings('{topstories,beststories,newstories}')
 ;
 
 WITH
