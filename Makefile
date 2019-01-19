@@ -1,13 +1,13 @@
 EXTENSION = hn_ranker
 DATA = $(wildcard *.sql)
 
-DOMAIN := ranking story_status
+DOMAIN := ranking story_status object
 DOMAIN := $(addprefix sql/domain/, $(addsuffix .sql, $(DOMAIN)))
 
 FUNCTION := max_id rankings item_json items
 FUNCTION := $(addprefix sql/function/, $(addsuffix .sql, $(FUNCTION)))
 
-TABLE := run story run_story
+TABLE := run story run_story error
 TABLE := $(addprefix sql/table/, $(addsuffix .sql, $(TABLE)))
 
 VIEW := run_story_stats

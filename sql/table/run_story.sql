@@ -10,8 +10,8 @@ CREATE TABLE @extschema@.run_story
     status hn_ranker.story_status,
     score integer,
     descendants bigint,
-    payload jsonb,
     ts_payload timestamp with time zone,
+    success boolean,
     CONSTRAINT run_story_pkey PRIMARY KEY (run_id, story_id),
     CONSTRAINT run_story_run_id_fkey FOREIGN KEY (run_id)
         REFERENCES @extschema@.run (id) MATCH SIMPLE

@@ -11,7 +11,7 @@ SELECT run.id run_id,
 	count(*) FILTER (WHERE run_story.status='cooling') cooling_count,
 	count(*) FILTER (WHERE run_story.status='cold') cold_count,
 	count(*) FILTER (WHERE run_story.status='frozen') frozen_count,
-	count(*) FILTER (WHERE run_story.payload IS NULL) fail_count,
+	count(*) FILTER (WHERE NOT run_story.success) fail_count,
 	count(*) total_count,
 	ts_run,
 	max(ts_payload)-min(ts_run) as fetch_duration

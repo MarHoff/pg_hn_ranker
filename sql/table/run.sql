@@ -9,7 +9,6 @@ CREATE TABLE @extschema@.run
     beststories bigint[],
     newstories bigint[],
     ts_end timestamp with time zone,
-    failed jsonb,
     CONSTRAINT run_pkey PRIMARY KEY (id)
 )
 WITH (
