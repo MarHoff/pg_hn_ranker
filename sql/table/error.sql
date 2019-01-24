@@ -11,6 +11,7 @@ CREATE TABLE @extschema@.error
         REFERENCES @extschema@.run (id) MATCH SIMPLE
         ON UPDATE RESTRICT
         ON DELETE RESTRICT
+    DEFERRABLE INITIALLY DEFERRED
 )
 WITH (
     OIDS = FALSE

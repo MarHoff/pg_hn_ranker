@@ -4,9 +4,9 @@ CREATE OR REPLACE FUNCTION @extschema@.rankings(
   ranking_array @extschema@.ranking[]
 )
 RETURNS TABLE (
-  ranking @extschema@.ranking,
+  id @extschema@.ranking,
   url url,
-  ids bigint[],
+  payload bigint[],
   ts_end timestamptz,
   duration double precision,
   batch bigint,
@@ -59,7 +59,7 @@ tget AS (
 SELECT tid id, tsel.url::url, conv.ids::bigint[], tget.ts_end, tget.duration, tget.batch, tget.retries, tget.batch_failrate
 FROM tsel
 LEFT JOIN tget ON tsel.url=tget.url
-LEFT JOIN LATERAL (SELECT array_agg(id::bigint) ids FROM jsonb_array_elements_text(tget.payload::jsonb) WITH ORDINALITY AS a(id, hn_rank)) conv ON true;
+LEFT JOIN LATERAL (SELECT array_agg(a.id::bigint) ids FROM jsonb_array_elements_text(tget.payload::jsonb) WITH ORDINALITY AS a(id, hn_rank)) conv ON true;
 
 END
 

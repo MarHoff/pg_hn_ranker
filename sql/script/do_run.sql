@@ -1,3 +1,5 @@
+START TRANSACTION;
+
 WITH
 get_rankings AS (SELECT * FROM hn_ranker.rankings('{topstories,beststories,newstories}')),
 insert_run AS (
@@ -9,17 +11,17 @@ INSERT INTO hn_ranker.run(
 	ts_end)
 SELECT
   now() ts_run,
-  max(ids) FILTER (WHERE ranking ='topstories') as topstories,
-  max(ids) FILTER (WHERE ranking ='beststories') as beststories,
-  max(ids) FILTER (WHERE ranking ='newstories') as newstories,
+  max(payload) FILTER (WHERE id ='topstories') as topstories,
+  max(payload) FILTER (WHERE id ='beststories') as beststories,
+  max(payload) FILTER (WHERE id ='newstories') as newstories,
   max(ts_end) as ts_end
   FROM get_rankings
 RETURNING *)
 INSERT INTO hn_ranker.error(
 run_id, object, object_id, report)
-SELECT id, 'run' as object, ranking::text object_id, row_to_json(get_rankings)::jsonb
+SELECT insert_run.id run_id, 'run' as object, get_rankings.id::text object_id, row_to_json(get_rankings)::jsonb
 FROM insert_run, get_rankings
-WHERE get_rankings.ids IS  NULL
+WHERE get_rankings.payload IS NULL OR NOT(get_rankings.retries = 0)
                                                 
 ;
 
@@ -149,6 +151,9 @@ WITH
 RETURNING * )
 INSERT INTO hn_ranker.error(run_id, object, object_id, report)
 SELECT
-id, 'run_story' as object, story_id::text object_id, row_to_json(get_items)::jsonb
+run_id, 'run_story' as object, story_id::text object_id, row_to_json(get_items)::jsonb
 FROM insert_run_story LEFT JOIN get_items ON story_id=get_items.id
-WHERE NOT get_items.sucess
+WHERE NOT insert_run_story.success OR NOT(get_items.retries = 0)
+;
+
+COMMIT;
