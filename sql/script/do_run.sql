@@ -24,6 +24,9 @@ FROM insert_run, get_rankings
 WHERE get_rankings.payload IS NULL OR NOT(get_rankings.retries = 0)
                                                 
 ;
+COMMIT;
+
+START TRANSACTION;
 
 WITH
   current_run AS (
