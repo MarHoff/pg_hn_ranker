@@ -2,9 +2,12 @@
 
 CREATE VIEW @extschema@.run_story_stats AS
 SELECT run.id run_id,
-	count(*) FILTER (WHERE run_story.topstories_rank IS NOT NULL) topstories_count,
-	count(*) FILTER (WHERE run_story.beststories_rank IS NOT NULL) beststories_count,
-	count(*) FILTER (WHERE run_story.newstories_rank IS NOT NULL) newstories_count,
+	array_length(run.topstories,1) topstories_count,
+	count(*) FILTER (WHERE run_story.topstories_rank IS NOT NULL) topstories_recorded,
+	array_length(run.beststories,1) beststories_count,
+	count(*) FILTER (WHERE run_story.beststories_rank IS NOT NULL) beststories_recorded,
+	array_length(run.newstories,1) newstories_count,
+	count(*) FILTER (WHERE run_story.newstories_rank IS NOT NULL) newstories_recorded,
 	count(*) FILTER (WHERE run_story.status='new') new_count,
 	count(*) FILTER (WHERE run_story.status='hot') hot_count,
 	count(*) FILTER (WHERE run_story.status='tepid') tepid_count,
