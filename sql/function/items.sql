@@ -56,9 +56,17 @@ tget AS (
       batch_retries_failrate := 0.05
     )
 )
-SELECT tid id, tsel.url::url, tget.payload::jsonb, tget.ts_end, tget.duration, tget.batch, tget.retries, tget.batch_failrate
-FROM tsel LEFT JOIN tget ON tsel.url=tget.url
-AND tget.payload is NOT NULL;
+SELECT
+tid id,
+  tsel.url::url,
+  --API might return 'null' json value so we need to diferentiate that from SQL NULL returned by wget failure
+  CASE WHEN tget.payload='null' THEN to_jsonb('json_null'::text) ELSE tget.payload::jsonb END payload,
+  tget.ts_end,
+  tget.duration,
+  tget.batch,
+  tget.retries,
+  tget.batch_failrate
+FROM tsel LEFT JOIN tget ON tsel.url=tget.url;
 
 END
 

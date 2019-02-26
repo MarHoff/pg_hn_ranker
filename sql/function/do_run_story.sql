@@ -12,6 +12,7 @@ WITH
     SELECT * FROM hn_ranker.run WHERE id=currval('hn_ranker.run_id_seq'::regclass)
   ),
   unnest_rankings AS (
+  --Unesting data from current_run
     SELECT id, 'topstories' ranking, story_id, hn_rank, ts_run
     FROM current_run, unnest(topstories) WITH ORDINALITY AS a(story_id, hn_rank)
     UNION ALL
@@ -21,7 +22,8 @@ WITH
     SELECT id, 'newstories' ranking, story_id, hn_rank, ts_run
     FROM current_run, unnest(newstories) WITH ORDINALITY AS a(story_id, hn_rank)
   ),
-  from_run_story AS (
+  current_run_story AS (
+  --Grouping information by unique story_id for current run
     SELECT
       id run_id,
       story_id,
@@ -33,6 +35,7 @@ WITH
       GROUP BY run_id, ts_run, story_id
       ORDER BY topstories_rank, newstories_rank, beststories_rank),
   last_run_story AS (
+  --Looking for candidates in last recorded run_story, gathering last status and "age" (in run) of that status
     SELECT
       run_id,
       story_id,
@@ -55,12 +58,13 @@ WITH
       WHERE run_id=max_run_id
    ),
   classify_run_story AS (
+  --Joining currents ranking vs last run and classifying candidates for fetching additional data
     SELECT
     currval('hn_ranker.run_id_seq'::regclass) run_id,
-    COALESCE(from_run_story.story_id,last_run_story.story_id) story_id,
-    from_run_story.topstories_rank,
-    from_run_story.beststories_rank,
-    from_run_story.newstories_rank,
+    COALESCE(current_run_story.story_id,last_run_story.story_id) story_id,
+    current_run_story.topstories_rank,
+    current_run_story.beststories_rank,
+    current_run_story.newstories_rank,
     CASE
       WHEN
         last_run_story.status IS NULL OR
@@ -84,9 +88,9 @@ WITH
       THEN 'cold'                                                     
       ELSE 'frozen'
     END::hn_ranker.story_status status,
-    from_run_story.ts_run-last_run_story.ts_run as last_run_story_age
+    current_run_story.ts_run-last_run_story.ts_run as last_run_story_age
     --,last_run_story.payload as last_run_story_payload                                                           
-  FROM from_run_story FULL JOIN last_run_story ON from_run_story.story_id=last_run_story.story_id 
+  FROM current_run_story FULL JOIN last_run_story ON current_run_story.story_id=last_run_story.story_id 
   ),
   filter_run_story AS (
     SELECT *
@@ -100,37 +104,39 @@ WITH
   ),
   get_items AS (SELECT * FROM hn_ranker.items((SELECT array_agg(story_id) FROM filter_run_story))),
 
-  insert_run_story AS (INSERT INTO hn_ranker.run_story(
-  run_id,
-  story_id,
-  topstories_rank,
-  beststories_rank,
-  newstories_rank,
-  status,
-  score,
-  descendants,
-  ts_payload,
-  success
-)
-  SELECT 
-  filter_run_story.run_id,
-  filter_run_story.story_id,
-  filter_run_story.topstories_rank,
-  filter_run_story.beststories_rank,
-  filter_run_story.newstories_rank,
-  filter_run_story.status,
-  (get_items.payload ->> 'score')::integer score,
-  (get_items.payload ->> 'descendants')::integer descendants,
-  /*CASE
-  WHEN items.payload IS NULL THEN NULL
-  WHEN items.payload - '{"descendants","score"}'::text[] = filter_run_story.last_run_story_payload THEN NULL
-  ELSE items.payload - '{"descendants","score"}'::text[] 
-  END::jsonb*/
-  get_items.ts_end ts_payload,
-  CASE WHEN get_items.payload IS NULL THEN false ELSE true END::boolean as success
-  FROM filter_run_story LEFT JOIN get_items
-  ON filter_run_story.story_id=get_items.id
-RETURNING * )
+  insert_run_story AS (
+    INSERT INTO hn_ranker.run_story(
+      run_id,
+      story_id,
+      topstories_rank,
+      beststories_rank,
+      newstories_rank,
+      status,
+      score,
+      descendants,
+      ts_payload,
+      success
+      )
+    SELECT 
+    filter_run_story.run_id,
+    filter_run_story.story_id,
+    filter_run_story.topstories_rank,
+    filter_run_story.beststories_rank,
+    filter_run_story.newstories_rank,
+    CASE WHEN get_items.payload = '"json_null"' THEN 'missing' ELSE filter_run_story.status END::hn_ranker.story_status status,
+    (get_items.payload ->> 'score')::integer score,
+    (get_items.payload ->> 'descendants')::integer descendants,
+    /*CASE
+    WHEN items.payload IS NULL THEN NULL
+    WHEN items.payload - '{"descendants","score"}'::text[] = filter_run_story.last_run_story_payload THEN NULL
+    ELSE items.payload - '{"descendants","score"}'::text[] 
+    END::jsonb*/
+    get_items.ts_end ts_payload,
+    CASE WHEN get_items.payload IS NULL THEN false ELSE true END::boolean as success
+    FROM filter_run_story LEFT JOIN get_items
+    ON filter_run_story.story_id=get_items.id
+    RETURNING *
+    )
 INSERT INTO hn_ranker.error(run_id, object, object_id, report)
 SELECT
 run_id, 'run_story' as object, story_id::text object_id, row_to_json(get_items)::jsonb
