@@ -4,7 +4,7 @@ DATA = $(wildcard *.sql)
 DOMAIN := ranking story_status object
 DOMAIN := $(addprefix sql/domain/, $(addsuffix .sql, $(DOMAIN)))
 
-TABLE := run story run_story error config_dump
+TABLE := run story run_story error ruleset rule config_dump
 TABLE := $(addprefix sql/table/, $(addsuffix .sql, $(TABLE)))
 
 FUNCTION := max_id rankings item_json items do_run do_run_story do_all
