@@ -3,7 +3,7 @@
 -- DROP PROCEDURE hn_ranker.do_all(text);
 
 CREATE OR REPLACE PROCEDURE hn_ranker.do_all(
-	hnr_config text DEFAULT 'default'::text)
+	hnr_config text DEFAULT 'production'::text)
 LANGUAGE 'sql'
 
 AS $BODY$
