@@ -1,5 +1,5 @@
-EXTENSION = hn_ranker
-DATA = $(wildcard *.sql)
+EXTENSION = pg_hn_ranker
+DATA = $(wildcard releases/*.sql)
 
 DOMAIN := ranking story_status object
 DOMAIN := $(addprefix sql/domain/, $(addsuffix .sql, $(DOMAIN)))
@@ -18,9 +18,9 @@ VIEW := $(addprefix sql/view/, $(addsuffix .sql, $(VIEW)))
 usage:
 	@echo 'pg_hn_ranker usage : "make install" to instal the extension, "make build" to build dev version against source SQL'
 
-build : hn_ranker--dev.sql
+build : releases/pg_hn_ranker--dev.sql
 
-hn_ranker--dev.sql : $(DOMAIN) $(TABLE) $(FUNCTION) $(VIEW)
+releases/pg_hn_ranker--dev.sql : $(DOMAIN) $(TABLE) $(FUNCTION) $(VIEW)
 	@echo 'Building develloper version'
 	cat $(DOMAIN) > $@ && cat $(TABLE) >> $@ && cat $(FUNCTION) >> $@ && cat $(VIEW) >> $@
 
