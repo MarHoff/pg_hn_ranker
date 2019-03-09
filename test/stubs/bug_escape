@@ -1,0 +1,1 @@
+SELECT * FROM wget_urls_raw('https://hacker-news.firebaseio.com/v0/item/7898.json')
