@@ -147,7 +147,7 @@ WITH
     WHEN items.payload - '{"descendants","score"}'::text[] = filter_run_story.last_run_story_payload THEN NULL
     ELSE items.payload - '{"descendants","score"}'::text[] 
     END::jsonb*/
-    get_items.ts_end ts_payload,
+    get_items.ts_end ts_payload
     FROM filter_run_story LEFT JOIN get_items
     ON filter_run_story.story_id=get_items.id
     RETURNING *
