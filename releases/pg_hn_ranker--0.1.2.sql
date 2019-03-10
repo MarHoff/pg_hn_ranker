@@ -2,7 +2,7 @@
 
 CREATE TYPE hn_ranker.ranking AS ENUM ('topstories','beststories','newstories');--Type used in story & run_story
 
-CREATE TYPE hn_ranker.story_status AS ENUM ('new','hot','tepid','cooling','cold','frozen','missing');--Create type used in object()
+CREATE TYPE hn_ranker.story_status AS ENUM ('new','hot','tepid','cooling','cold','frozen','deleted','missing','failed');--Create type used in object()
 
 CREATE TYPE hn_ranker.object AS ENUM ('run','run_story');-- Table: @extschema@.run
 
@@ -518,8 +518,7 @@ WITH
       status,
       score,
       descendants,
-      ts_payload,
-      success
+      ts_payload
       )
     SELECT 
     filter_run_story.run_id,
@@ -527,7 +526,11 @@ WITH
     filter_run_story.topstories_rank,
     filter_run_story.beststories_rank,
     filter_run_story.newstories_rank,
-    CASE WHEN get_items.payload = '"json_null"' THEN 'missing' ELSE filter_run_story.status END::hn_ranker.story_status status,
+    CASE
+      WHEN (get_items.payload ->> 'deleted') = 'true' THEN 'deleted'
+      WHEN get_items.payload = '"json_null"' THEN 'missing'
+      WHEN get_items.payload IS NULL THEN 'failed'
+      ELSE filter_run_story.status END::hn_ranker.story_status status,
     (get_items.payload ->> 'score')::integer score,
     (get_items.payload ->> 'descendants')::integer descendants,
     /*CASE
@@ -535,8 +538,7 @@ WITH
     WHEN items.payload - '{"descendants","score"}'::text[] = filter_run_story.last_run_story_payload THEN NULL
     ELSE items.payload - '{"descendants","score"}'::text[] 
     END::jsonb*/
-    get_items.ts_end ts_payload,
-    CASE WHEN get_items.payload IS NULL THEN false ELSE true END::boolean as success
+    get_items.ts_end ts_payload
     FROM filter_run_story LEFT JOIN get_items
     ON filter_run_story.story_id=get_items.id
     RETURNING *
@@ -545,7 +547,7 @@ INSERT INTO hn_ranker.error(run_id, object, object_id, report)
 SELECT
 run_id, 'run_story' as object, story_id::text object_id, row_to_json(get_items)::jsonb
 FROM insert_run_story LEFT JOIN get_items ON story_id=get_items.id
-WHERE NOT insert_run_story.success OR NOT(get_items.retries = 0);
+WHERE insert_run_story.status >= 'deleted' OR NOT(get_items.retries = 0);
 END;
 $BODY$;
 
@@ -566,24 +568,24 @@ $BODY$;
 
 CREATE VIEW @extschema@.run_story_stats AS
 SELECT run.id run_id,
-	array_length(run.topstories,1) topstories_count,
-	count(*) FILTER (WHERE run_story.topstories_rank IS NOT NULL) topstories_recorded,
-	array_length(run.beststories,1) beststories_count,
-	count(*) FILTER (WHERE run_story.beststories_rank IS NOT NULL) beststories_recorded,
-	array_length(run.newstories,1) newstories_count,
-	count(*) FILTER (WHERE run_story.newstories_rank IS NOT NULL) newstories_recorded,
-	count(*) FILTER (WHERE run_story.status='new') new_count,
-	count(*) FILTER (WHERE run_story.status='hot') hot_count,
-	count(*) FILTER (WHERE run_story.status='tepid') tepid_count,
-	count(*) FILTER (WHERE run_story.status='cooling') cooling_count,
-	count(*) FILTER (WHERE run_story.status='cold') cold_count,
-	count(*) FILTER (WHERE run_story.status='frozen') frozen_count,
-	count(*) FILTER (WHERE run_story.status='missing') missing_count,
-	(count(*) FILTER (WHERE NOT run_story.success))-(count(*) FILTER (WHERE score IS NULL)) retried_count,
-	count(*) FILTER (WHERE score IS NULL) fail_count,
-	count(*) total_count,
+	format('%1$s/%2$s',count(*) FILTER (WHERE run_story.topstories_rank IS NOT NULL), array_length(run.topstories,1)) AS topstories,
+	format('%1$s/%2$s',count(*) FILTER (WHERE run_story.beststories_rank IS NOT NULL), array_length(run.beststories,1)) AS beststories,
+	format('%1$s/%2$s',count(*) FILTER (WHERE run_story.newstories_rank IS NOT NULL), array_length(run.newstories,1)) AS newstories,
+	count(*) FILTER (WHERE run_story.status='new') AS new,
+	count(*) FILTER (WHERE run_story.status='hot') AS hot,
+	count(*) FILTER (WHERE run_story.status='tepid') AS tepid,
+	count(*) FILTER (WHERE run_story.status='cooling') AS cooling,
+	count(*) FILTER (WHERE run_story.status='cold') AS cold,
+	count(*) FILTER (WHERE run_story.status='frozen') AS frozen,
+	count(*) FILTER (WHERE run_story.status='deleted') AS deleted,
+	count(*) FILTER (WHERE run_story.status='missing') AS missing,
+	count(*) FILTER (WHERE run_story.status='failed') AS failed,
+	(count(*) FILTER (WHERE (error.report ->> 'retries')::integer > 0)) AS retried_count,
+	count(*) AS total_count,
 	ts_run,
 	max(ts_payload)-min(ts_run) as fetch_duration
-FROM @extschema@.run LEFT JOIN @extschema@.run_story ON run.id=run_story.run_id
-	GROUP BY run.id
-	ORDER BY run.id desc;
+FROM @extschema@.run
+LEFT JOIN @extschema@.run_story ON run.id=run_story.run_id
+LEFT JOIN @extschema@.error ON run_story.run_id=error.run_id AND error.object='run_story' AND run_story.story_id=error.object_id::bigint
+GROUP BY run.id
+ORDER BY run.id desc;
