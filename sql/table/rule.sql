@@ -40,8 +40,8 @@ $${
 "tepid_age":"19 minute",
 "cooling_repeat":12,
 "cooling_age":"59 minute",
-"cold_repeat":1,
-"cold_age":"6 hours",
-"frozen_age":"60 second"
+"cold_repeat":2,
+"cold_age":"6 hour",
+"frozen_age":"7 day"
 }$$)
 );
