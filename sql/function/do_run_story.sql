@@ -127,8 +127,7 @@ WITH
       status,
       score,
       descendants,
-      ts_payload,
-      success
+      ts_payload
       )
     SELECT 
     filter_run_story.run_id,
@@ -136,7 +135,11 @@ WITH
     filter_run_story.topstories_rank,
     filter_run_story.beststories_rank,
     filter_run_story.newstories_rank,
-    CASE WHEN get_items.payload = '"json_null"' THEN 'missing' ELSE filter_run_story.status END::hn_ranker.story_status status,
+    CASE
+      WHEN (get_items.payload ->> 'deleted') = 'true' THEN 'deleted'
+      WHEN get_items.payload = '"json_null"' THEN 'missing'
+      WHEN get_items.payload IS NULL THEN 'failed'
+      ELSE filter_run_story.status END::hn_ranker.story_status status,
     (get_items.payload ->> 'score')::integer score,
     (get_items.payload ->> 'descendants')::integer descendants,
     /*CASE
@@ -144,8 +147,7 @@ WITH
     WHEN items.payload - '{"descendants","score"}'::text[] = filter_run_story.last_run_story_payload THEN NULL
     ELSE items.payload - '{"descendants","score"}'::text[] 
     END::jsonb*/
-    get_items.ts_end ts_payload,
-    CASE WHEN get_items.payload IS NULL THEN false ELSE true END::boolean as success
+    get_items.ts_end ts_payload
     FROM filter_run_story LEFT JOIN get_items
     ON filter_run_story.story_id=get_items.id
     RETURNING *
@@ -154,7 +156,7 @@ INSERT INTO hn_ranker.error(run_id, object, object_id, report)
 SELECT
 run_id, 'run_story' as object, story_id::text object_id, row_to_json(get_items)::jsonb
 FROM insert_run_story LEFT JOIN get_items ON story_id=get_items.id
-WHERE NOT insert_run_story.success OR NOT(get_items.retries = 0);
+WHERE insert_run_story.status >= 'deleted' OR NOT(get_items.retries = 0);
 END;
 $BODY$;
 
