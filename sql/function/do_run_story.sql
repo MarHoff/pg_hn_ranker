@@ -136,7 +136,7 @@ WITH
     filter_run_story.beststories_rank,
     filter_run_story.newstories_rank,
     CASE
-      WHEN (get_items.payload ->> 'deleted') = true THEN 'deleted'
+      WHEN (get_items.payload ->> 'deleted') = 'true' THEN 'deleted'
       WHEN get_items.payload = '"json_null"' THEN 'missing'
       WHEN get_items.payload IS NULL THEN 'failed'
       ELSE filter_run_story.status END::hn_ranker.story_status status,
