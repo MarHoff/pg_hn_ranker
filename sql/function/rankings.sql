@@ -45,7 +45,7 @@ tget AS (
       i_delimiter := '@wget_token@'::text,
       i_delay := 0,
       r_min_latency := 0,
-      r_timeout := 5,
+      r_timeout := 10,
       r_tries := 1,
       r_waitretry := 0,
       r_parallel_jobs := 20,
@@ -53,7 +53,7 @@ tget AS (
       r_delay := 5,
       batch_size := 2000,
       batch_retries := 2,
-      batch_retries_failrate := 0.05
+      batch_retries_failrate := 1
     )
 )
 SELECT tid id, tsel.url::url, conv.ids::bigint[], tget.ts_end, tget.duration, tget.batch, tget.retries, tget.batch_failrate
