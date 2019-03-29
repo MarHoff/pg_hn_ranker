@@ -1,6 +1,6 @@
 # pg_hnranker extension
 comment = 'Side project to gather data about hn post ranking evolution'
-default_version = '0.1.2'
+default_version = '0.1.3'
 relocatable = false
 schema = hn_ranker
 requires = 'plsh, pmwget'

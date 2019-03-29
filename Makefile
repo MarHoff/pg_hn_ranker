@@ -10,7 +10,7 @@ TABLE := $(addprefix sql/table/, $(addsuffix .sql, $(TABLE)))
 FUNCTION := max_id rankings item_json items do_run do_run_story do_all
 FUNCTION := $(addprefix sql/function/, $(addsuffix .sql, $(FUNCTION)))
 
-VIEW := run_story_stats
+VIEW := run_story_stats diagnose_errors
 VIEW := $(addprefix sql/view/, $(addsuffix .sql, $(VIEW)))
 
 #TESTS = $(wildcard TEST/SQL/*.sql)
