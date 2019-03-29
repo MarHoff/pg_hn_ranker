@@ -46,11 +46,7 @@ CREATE TABLE @extschema@.run_story
     descendants bigint,
     ts_payload timestamp with time zone,
     success boolean,
-    CONSTRAINT run_story_pkey PRIMARY KEY (run_id, story_id),
-    CONSTRAINT run_story_run_id_fkey FOREIGN KEY (run_id)
-        REFERENCES @extschema@.run (id) MATCH SIMPLE
-        ON UPDATE RESTRICT
-        ON DELETE RESTRICT
+    CONSTRAINT run_story_pkey PRIMARY KEY (run_id, story_id)
 )
 WITH (
     OIDS = FALSE
@@ -63,12 +59,7 @@ CREATE TABLE @extschema@.error
     object hn_ranker.object,
     object_id text,
     report jsonb,
-    CONSTRAINT error_pkey PRIMARY KEY (run_id, object, object_id),
-    CONSTRAINT error_run_id_fkey FOREIGN KEY (run_id)
-        REFERENCES @extschema@.run (id) MATCH SIMPLE
-        ON UPDATE RESTRICT
-        ON DELETE RESTRICT
-    DEFERRABLE INITIALLY DEFERRED
+    CONSTRAINT error_pkey PRIMARY KEY (run_id, object, object_id)
 )
 WITH (
     OIDS = FALSE
@@ -214,7 +205,7 @@ tget AS (
       i_delimiter := '@wget_token@'::text,
       i_delay := 0,
       r_min_latency := 0,
-      r_timeout := 5,
+      r_timeout := 10,
       r_tries := 1,
       r_waitretry := 0,
       r_parallel_jobs := 20,
@@ -222,7 +213,7 @@ tget AS (
       r_delay := 5,
       batch_size := 2000,
       batch_retries := 2,
-      batch_retries_failrate := 0.05
+      batch_retries_failrate := 1
     )
 )
 SELECT tid id, tsel.url::url, conv.ids::bigint[], tget.ts_end, tget.duration, tget.batch, tget.retries, tget.batch_failrate
@@ -568,9 +559,9 @@ $BODY$;
 
 CREATE VIEW @extschema@.run_story_stats AS
 SELECT run.id run_id,
-	format('%1$s/%2$s',count(*) FILTER (WHERE run_story.topstories_rank IS NOT NULL), array_length(run.topstories,1)) AS topstories,
-	format('%1$s/%2$s',count(*) FILTER (WHERE run_story.beststories_rank IS NOT NULL), array_length(run.beststories,1)) AS beststories,
-	format('%1$s/%2$s',count(*) FILTER (WHERE run_story.newstories_rank IS NOT NULL), array_length(run.newstories,1)) AS newstories,
+	format('%1$s/%2$s',count(*) FILTER (WHERE run_story.topstories_rank IS NOT NULL), COALESCE(array_length(run.topstories,1)::text,'error')) AS topstories,
+	format('%1$s/%2$s',count(*) FILTER (WHERE run_story.beststories_rank IS NOT NULL), COALESCE(array_length(run.beststories,1)::text,'error')) AS beststories,
+	format('%1$s/%2$s',count(*) FILTER (WHERE run_story.newstories_rank IS NOT NULL), COALESCE(array_length(run.newstories,1)::text,'error')) AS newstories,
 	count(*) FILTER (WHERE run_story.status='new') AS new,
 	count(*) FILTER (WHERE run_story.status='hot') AS hot,
 	count(*) FILTER (WHERE run_story.status='tepid') AS tepid,
@@ -589,3 +580,28 @@ LEFT JOIN @extschema@.run_story ON run.id=run_story.run_id
 LEFT JOIN @extschema@.error ON run_story.run_id=error.run_id AND error.object='run_story' AND run_story.story_id=error.object_id::bigint
 GROUP BY run.id
 ORDER BY run.id desc;
+-- View: @extschema@.diagnose_errors
+
+CREATE VIEW @extschema@.diagnose_errors AS
+WITH run AS (SELECT max(id) FROM hn_ranker.run)
+SELECT
+e.run_id,
+e.object,
+e.object_id,
+rs.status,
+format('%1$s/%2$s/%3$s',
+		coalesce(topstories_rank::text,'*'),
+		coalesce(beststories_rank::text,'*'),
+		coalesce(newstories_rank::text,'*')
+) rankings,
+rs.score,
+(e.report ->> 'ts_end')::timestamptz ts_end,
+(e.report ->> 'duration')::numeric duration,
+(e.report ->> 'retries')::integer retries,
+(e.report ->> 'batch_failrate')::numeric batch_failrate,
+(e.report ->> 'url') url,
+jsonb_pretty(e.report -> 'payload')
+FROM hn_ranker.error e
+LEFT JOIN hn_ranker.run_story rs ON e.object='run_story' AND e.run_id=rs.run_id AND e.object_id::text=rs.story_id::text
+--WHERE object='run_story' --AND retries = 0
+ORDER BY object, run_id, object_id
