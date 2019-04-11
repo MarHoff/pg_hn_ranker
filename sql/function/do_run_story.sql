@@ -15,32 +15,7 @@ SELECT val INTO STRICT param FROM hn_ranker.rule WHERE ruleset_id=hnr_ruleset;
 RAISE NOTICE 'param: %', param;
 
 WITH
-  current_run AS (
-    SELECT * FROM hn_ranker.run WHERE id=currval('hn_ranker.run_id_seq'::regclass)
-  ),
-  unnest_rankings AS (
-  --Unesting data from current_run
-    SELECT id, 'topstories' ranking, story_id, hn_rank, ts_run
-    FROM current_run, unnest(topstories) WITH ORDINALITY AS a(story_id, hn_rank)
-    UNION ALL
-    SELECT id, 'beststories' ranking, story_id, hn_rank, ts_run
-    FROM current_run, unnest(beststories) WITH ORDINALITY AS a(story_id, hn_rank)
-    UNION ALL
-    SELECT id, 'newstories' ranking, story_id, hn_rank, ts_run
-    FROM current_run, unnest(newstories) WITH ORDINALITY AS a(story_id, hn_rank)
-  ),
-  current_run_story AS (
-  --Grouping information by unique story_id for current run
-    SELECT
-      id run_id,
-      story_id,
-      min(hn_rank) FILTER (WHERE ranking='topstories') topstories_rank,
-      min(hn_rank) FILTER (WHERE ranking='beststories') beststories_rank,
-      min(hn_rank) FILTER (WHERE ranking='newstories') newstories_rank,
-      ts_run
-    FROM unnest_rankings
-      GROUP BY run_id, ts_run, story_id
-      ORDER BY topstories_rank, newstories_rank, beststories_rank),
+  current_run_story AS (SELECT * FROM hn_ranker.build_stories_ranks(currval('hn_ranker.run_id_seq'::regclass))),
   last_run_story AS (
   --Looking for candidates in last recorded run_story, gathering last status and "age" (in run) of that status
     SELECT
