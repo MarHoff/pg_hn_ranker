@@ -40,7 +40,7 @@ SELECT
       min(hn_rank) FILTER (WHERE ranking='newstories')::integer newstories_rank,
       unnest_rankings.ts_run
     FROM unnest_rankings
-      GROUP BY unnest_rankings.id, unnest_rankings.ts_run, unnest_rankings.story_id
+      GROUP BY unnest_rankings.id, unnest_rankings.ts_run, unnest_rankings.story_id;
 END;
 $BODY$;
 

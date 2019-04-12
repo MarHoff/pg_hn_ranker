@@ -6,9 +6,9 @@ CREATE OR REPLACE FUNCTION hn_ranker.build_stories_last(v_run_id bigint DEFAULT 
 RETURNS TABLE (
   run_id bigint,
   story_id bigint,
-  last_status hn_ranker.story_status,
-  last_score integer,
-  last_ts_run timestamptz,
+  status hn_ranker.story_status,
+  score integer,
+  ts_run timestamptz,
   status_repeat integer
 )
 LANGUAGE 'plpgsql'
@@ -29,7 +29,7 @@ sel_run_story AS (
       ) max_run_id,
     row_number() OVER (
       PARTITION BY run_story.story_id,run_story.status
-      ORDER BY run_story.story_id,run_story.run_id,status
+      ORDER BY run_story.story_id,run_story.run_id,run_story.status
       ) status_repeat
   FROM hn_ranker.run_story
   WHERE v_run_id IS NULL OR run_story.run_id < v_run_id
@@ -37,10 +37,10 @@ sel_run_story AS (
 SELECT
     sel_run_story.run_id,
     sel_run_story.story_id,
-    sel_run_story.status last_status,
-    sel_run_story.score last_score,
+    sel_run_story.status status,
+    sel_run_story.score score,
     --payload,
-    run.ts_run last_ts_run,
+    run.ts_run ts_run,
     sel_run_story.status_repeat::integer status_repeat
   FROM sel_run_story
     JOIN hn_ranker.run ON sel_run_story.run_id=run.id
