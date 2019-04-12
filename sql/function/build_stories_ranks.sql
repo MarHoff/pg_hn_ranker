@@ -41,7 +41,6 @@ SELECT
       unnest_rankings.ts_run
     FROM unnest_rankings
       GROUP BY unnest_rankings.id, unnest_rankings.ts_run, unnest_rankings.story_id
-      ORDER BY topstories_rank, newstories_rank, beststories_rank;
 END;
 $BODY$;
 
