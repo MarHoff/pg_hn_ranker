@@ -6,6 +6,9 @@ CREATE OR REPLACE FUNCTION hn_ranker.build_stories_last(v_run_id bigint DEFAULT 
 RETURNS TABLE (
   run_id bigint,
   story_id bigint,
+  topstories_rank integer,
+  beststories_rank integer,
+  newstories_rank integer,
   status hn_ranker.story_status,
   score integer,
   ts_run timestamptz,
@@ -37,6 +40,9 @@ sel_run_story AS (
 SELECT
     sel_run_story.run_id,
     sel_run_story.story_id,
+    array_position(run.topstories, sel_run_story.story_id) topstories_rank,
+    array_position(run.beststories, sel_run_story.story_id) beststories_rank,
+    array_position(run.newstories, sel_run_story.story_id) newstories_rank,
     sel_run_story.status status,
     sel_run_story.score score,
     --payload,
