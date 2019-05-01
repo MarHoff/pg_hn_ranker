@@ -23,16 +23,16 @@ WITH
   unnest_rankings AS (
   --Unesting data from selected_run
     SELECT selected_run.id, 'topstories' ranking, a.story_id, a.hn_rank, selected_run.ts_run
-    FROM selected_run,
-    LATERAL unnest(selected_run.topstories) WITH ORDINALITY AS a(story_id, hn_rank)
-    UNION ALL
+    FROM selected_run
+    CROSS JOIN LATERAL unnest(selected_run.topstories) WITH ORDINALITY AS a(story_id, hn_rank)
+  UNION ALL
     SELECT selected_run.id, 'beststories' ranking, a.story_id, a.hn_rank, selected_run.ts_run
-    FROM selected_run,
-    LATERAL unnest(selected_run.beststories) WITH ORDINALITY AS a(story_id, hn_rank)
-    UNION ALL
+    FROM selected_run
+    CROSS JOIN LATERAL unnest(selected_run.beststories) WITH ORDINALITY AS a(story_id, hn_rank)
+  UNION ALL
     SELECT selected_run.id, 'newstories' ranking, a.story_id, a.hn_rank, selected_run.ts_run
-    FROM selected_run,
-    LATERAL unnest(selected_run.newstories) WITH ORDINALITY AS a(story_id, hn_rank)
+    FROM selected_run
+    CROSS JOIN LATERAL unnest(selected_run.newstories) WITH ORDINALITY AS a(story_id, hn_rank)
   )
 --Grouping information by unique story_id for current run
 SELECT
