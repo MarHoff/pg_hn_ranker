@@ -15,7 +15,7 @@ SELECT val INTO STRICT param FROM hn_ranker.rule WHERE ruleset_id=hnr_ruleset;
 RAISE NOTICE 'param: %', param;
 
 WITH
-  current AS (SELECT * FROM hn_ranker.build_stories_ranks(currval('hn_ranker.run_id_seq'::regclass))),
+  current AS (SELECT * FROM hn_ranker.build_stories_ranks(ARRAY[currval('hn_ranker.run_id_seq'::regclass)::bigint])),
   last AS (SELECT * FROM hn_ranker.build_stories_last(currval('hn_ranker.run_id_seq'::regclass))),
   classify_run_story AS (
   --Joining currents ranking vs last run and classifying candidates for fetching additional data

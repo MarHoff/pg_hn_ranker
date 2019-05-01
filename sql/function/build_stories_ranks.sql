@@ -2,7 +2,7 @@
 
 -- DROP FUNCTION hn_ranker.build_stories_ranks(text);
 
-CREATE OR REPLACE FUNCTION hn_ranker.build_stories_ranks( v_run_id bigint)
+CREATE OR REPLACE FUNCTION hn_ranker.build_stories_ranks( v_run_id bigint[] DEFAULT NULL )
 RETURNS TABLE (
   run_id bigint,
   story_id bigint,
@@ -17,19 +17,22 @@ AS $BODY$
 BEGIN
 RETURN QUERY
 WITH
-  current_run AS (
-    SELECT * FROM hn_ranker.run WHERE id=v_run_id
+  selected_run AS (
+    SELECT * FROM hn_ranker.run WHERE v_run_id IS NULL OR id = ANY(v_run_id)
   ),
   unnest_rankings AS (
-  --Unesting data from current_run
-    SELECT current_run.id, 'topstories' ranking, a.story_id, a.hn_rank, current_run.ts_run
-    FROM current_run, unnest(topstories) WITH ORDINALITY AS a(story_id, hn_rank)
+  --Unesting data from selected_run
+    SELECT selected_run.id, 'topstories' ranking, a.story_id, a.hn_rank, selected_run.ts_run
+    FROM selected_run,
+    LATERAL unnest(selected_run.topstories) WITH ORDINALITY AS a(story_id, hn_rank)
     UNION ALL
-    SELECT current_run.id, 'beststories' ranking, a.story_id, a.hn_rank, current_run.ts_run
-    FROM current_run, unnest(beststories) WITH ORDINALITY AS a(story_id, hn_rank)
+    SELECT selected_run.id, 'beststories' ranking, a.story_id, a.hn_rank, selected_run.ts_run
+    FROM selected_run,
+    LATERAL unnest(selected_run.beststories) WITH ORDINALITY AS a(story_id, hn_rank)
     UNION ALL
-    SELECT current_run.id, 'newstories' ranking, a.story_id, a.hn_rank, current_run.ts_run
-    FROM current_run, unnest(newstories) WITH ORDINALITY AS a(story_id, hn_rank)
+    SELECT selected_run.id, 'newstories' ranking, a.story_id, a.hn_rank, selected_run.ts_run
+    FROM selected_run,
+    LATERAL unnest(selected_run.newstories) WITH ORDINALITY AS a(story_id, hn_rank)
   )
 --Grouping information by unique story_id for current run
 SELECT
