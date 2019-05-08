@@ -7,7 +7,7 @@ DOMAIN := $(addprefix sql/domain/, $(addsuffix .sql, $(DOMAIN)))
 TABLE := run story run_story error ruleset rule config_dump
 TABLE := $(addprefix sql/table/, $(addsuffix .sql, $(TABLE)))
 
-FUNCTION := max_id rankings item_json items build_stories_ranks build_stories_last do_run do_run_story do_all
+FUNCTION := max_id rankings item_json items build_stories_ranks build_stories_last build_stories_fetch do_run do_run_story do_all
 FUNCTION := $(addprefix sql/function/, $(addsuffix .sql, $(FUNCTION)))
 
 VIEW := run_story_stats diagnose_errors
