@@ -30,30 +30,31 @@ r_cold_repeat integer;
 r_cold_age interval; 
 r_frozen_age interval;
 BEGIN
-SELECT val INTO STRICT rule FROM hn_ranker.rule WHERE ruleset_id=hnr_ruleset;
-r_new_repeat := (rule ->> 'new_repeat')::integer;
-r_hot_repeat := (rule ->> 'hot_repeat')::integer;
-r_hot_rank := (rule ->> 'hot_rank')::integer;
-r_tepid_rank := (rule ->> 'tepid_rank')::integer;
-r_tepid_age := (rule ->> 'tepid_age')::interval;
-r_cooling_repeat := (rule ->> 'cooling_repeat')::integer;
-r_cooling_age := (rule ->> 'cooling_age')::interval;
-r_cold_repeat := (rule ->> 'cold_repeat')::integer;
-r_cold_age := (rule ->> 'cold_age')::interval;
-r_frozen_age := (rule ->> 'frozen_age')::interval;
-
 RAISE NOTICE 'hnr_ruleset: %', hnr_ruleset;
-RAISE NOTICE 'rule: %', rule;
-RAISE NOTICE 'r_new_repeat: %', r_new_repeat;
-RAISE NOTICE 'r_hot_repeat: %', r_hot_repeat;
-RAISE NOTICE 'r_hot_rank: %', r_hot_rank;
-RAISE NOTICE 'r_tepid_rank: %', r_tepid_rank;
-RAISE NOTICE 'r_tepid_age: %', r_tepid_age;
-RAISE NOTICE 'r_cooling_repeat: %', r_cooling_repeat;
-RAISE NOTICE 'r_cooling_age: %', r_cooling_age;
-RAISE NOTICE 'r_cold_repeat: %', r_cold_repeat;
-RAISE NOTICE 'r_cold_age: %', r_cold_age;
-RAISE NOTICE 'r_frozen_age: %', r_frozen_age;
+
+SELECT val INTO STRICT rule FROM hn_ranker.rule WHERE rule.ruleset_id=hnr_ruleset AND rule.rule='run_story_param';
+IF rule IS NULL THEN RAISE EXCEPTION 'rule "run_story_param" of ruleset "%" can''t be NULL!', hnr_ruleset; ELSE RAISE NOTICE 'rule: %', rule; END IF;
+
+r_new_repeat := (rule ->> 'new_repeat')::integer;
+IF r_new_repeat IS NULL THEN RAISE EXCEPTION 'new_repeat parameter of ruleset "%" can''t be NULL!', hnr_ruleset; ELSE RAISE NOTICE 'r_new_repeat: %', r_new_repeat; END IF;
+r_hot_repeat := (rule ->> 'hot_repeat')::integer;
+IF r_hot_repeat IS NULL THEN RAISE EXCEPTION 'hot_repeat parameter of ruleset "%" can''t be NULL!', hnr_ruleset; ELSE RAISE NOTICE 'r_hot_repeat: %', r_hot_repeat; END IF;
+r_hot_rank := (rule ->> 'hot_rank')::integer;
+IF r_hot_rank IS NULL THEN RAISE EXCEPTION 'hot_rank parameter of ruleset "%" can''t be NULL!', hnr_ruleset; ELSE RAISE NOTICE 'r_hot_rank: %', r_hot_rank; END IF;
+r_tepid_rank := (rule ->> 'tepid_rank')::integer;
+IF r_tepid_rank IS NULL THEN RAISE EXCEPTION 'tepid_rank parameter of ruleset "%" can''t be NULL!', hnr_ruleset; ELSE RAISE NOTICE 'r_tepid_rank: %', r_tepid_rank; END IF;
+r_tepid_age := (rule ->> 'tepid_age')::interval;
+IF r_tepid_age IS NULL THEN RAISE EXCEPTION 'tepid_age parameter of ruleset "%" can''t be NULL!', hnr_ruleset; ELSE RAISE NOTICE 'r_tepid_age: %', r_tepid_age; END IF;
+r_cooling_repeat := (rule ->> 'cooling_repeat')::integer;
+IF r_cooling_repeat IS NULL THEN RAISE EXCEPTION 'cooling_repeat parameter of ruleset "%" can''t be NULL!', hnr_ruleset; ELSE RAISE NOTICE 'r_cooling_repeat: %', r_cooling_repeat; END IF;
+r_cooling_age := (rule ->> 'cooling_age')::interval;
+IF r_cooling_age IS NULL THEN RAISE EXCEPTION 'cooling_age parameter of ruleset "%" can''t be NULL!', hnr_ruleset; ELSE RAISE NOTICE 'r_cooling_age: %', r_cooling_age; END IF;
+r_cold_repeat := (rule ->> 'cold_repeat')::integer;
+IF r_cold_repeat IS NULL THEN RAISE EXCEPTION 'cold_repeat parameter of ruleset "%" can''t be NULL!', hnr_ruleset; ELSE RAISE NOTICE 'r_cold_repeat: %', r_cold_repeat; END IF;
+r_cold_age := (rule ->> 'cold_age')::interval;
+IF r_cold_age IS NULL THEN RAISE EXCEPTION 'cold_age parameter of ruleset "%" can''t be NULL!', hnr_ruleset; ELSE RAISE NOTICE 'r_cold_age: %', r_cold_age; END IF;
+r_frozen_age := (rule ->> 'frozen_age')::interval;
+IF r_frozen_age IS NULL THEN RAISE EXCEPTION 'frozen_age parameter of ruleset "%" can''t be NULL!', hnr_ruleset; ELSE RAISE NOTICE 'r_frozen_age: %', r_frozen_age; END IF;
 
 /*RETURN QUERY
 --Looking for candidates in last recorded run_story, gathering last status and "age" (in run) of that status
