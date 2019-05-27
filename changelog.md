@@ -2,6 +2,7 @@
 
 ##Version 0.X
 - TODO use rulsets in pg_pmwget wrappers
+- TODO write a rule validation function instead of embeding checks in build_stories_fecth
 - TODO Implements garbage collector
 - TODO Alter schema to avoid redundancy between run and run_story rankings storage
 

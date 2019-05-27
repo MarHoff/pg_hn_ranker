@@ -9,15 +9,18 @@ RETURNS TABLE (
   topstories_rank integer,
   beststories_rank integer,
   newstories_rank integer,
-  status hn_ranker.story_status,
-  score integer,
-  ts_run timestamptz,
-  status_repeat integer
+  last_score integer,
+  last_status hn_ranker.story_status,
+  last_status_repeat integer,
+  last_ts_run timestamptz,
+  last_age interval,
+  new_status hn_ranker.story_status
 )
 LANGUAGE 'plpgsql'
 
 AS $BODY$
 DECLARE
+f_run_id bigint;
 rule jsonb ;
 r_new_repeat integer; 
 r_hot_repeat integer; 
@@ -56,19 +59,28 @@ IF r_cold_age IS NULL THEN RAISE EXCEPTION 'cold_age parameter of ruleset "%" ca
 r_frozen_age := (rule ->> 'frozen_age')::interval;
 IF r_frozen_age IS NULL THEN RAISE EXCEPTION 'frozen_age parameter of ruleset "%" can''t be NULL!', hnr_ruleset; ELSE RAISE NOTICE 'r_frozen_age: %', r_frozen_age; END IF;
 
-/*RETURN QUERY
+
+IF v_run_id IS NOT NULL THEN f_run_id := v_run_id; ELSE SELECT last_value INTO STRICT f_run_id FROM hn_ranker.run_id_seq; END IF;
+
+
+RETURN QUERY
 --Looking for candidates in last recorded run_story, gathering last status and "age" (in run) of that status
 WITH
-  current AS (SELECT * FROM hn_ranker.build_stories_ranks(ARRAY[currval('hn_ranker.run_id_seq'::regclass)::bigint])),
-  last AS (SELECT * FROM hn_ranker.build_stories_last(currval('hn_ranker.run_id_seq'::regclass))),
-  classify_run_story AS (
+  current AS (SELECT * FROM hn_ranker.build_stories_ranks(ARRAY[f_run_id])),
+  last AS (SELECT * FROM hn_ranker.build_stories_last(f_run_id)),
+  classify AS (
   --Joining currents ranking vs last run and classifying candidates for fetching additional data
     SELECT
-    currval('hn_ranker.run_id_seq'::regclass) run_id,
+    f_run_id run_id,
     COALESCE(current.story_id,last.story_id) story_id,
     current.topstories_rank,
     current.beststories_rank,
     current.newstories_rank,
+    last.score last_score,
+    last.status last_status,
+    last.status_repeat last_status_repeat,
+    last.ts_run last_ts_run,
+    current.ts_run-last.ts_run as last_age,
     CASE
       WHEN
         last.status IS NULL OR
@@ -95,21 +107,19 @@ WITH
         last.status='missing'
         THEN 'cold'                                                     
       ELSE 'frozen'
-    END::hn_ranker.story_status status,
-    current.ts_run-last.ts_run as last_age
+    END::hn_ranker.story_status new_status
     --,last.payload as last_payload                                                           
   FROM current FULL JOIN last ON current.story_id=last.story_id 
-  ),
-  filter_run_story AS (
-    SELECT *
-    FROM classify_run_story
+  )
+SELECT classify.*
+    FROM classify
     WHERE
-      status <= 'hot' OR
-      (status = 'tepid' AND last_age >= r_tepid_age) OR --'59 min'::interval) OR
-      (status = 'cooling' AND last_age >= r_cooling_age) OR --'1 days'::interval) OR
-      (status = 'cold' AND last_age >= r_cold_age) OR --'7 days'::interval) OR
-      (status = 'frozen' AND last_age >= r_frozen_age) --'1 month'::interval)
-  );*/
+      classify.last_status <= 'hot' OR
+      (classify.last_status = 'tepid' AND classify.last_age >= r_tepid_age) OR --'59 min'::interval) OR
+      (classify.last_status = 'cooling' AND classify.last_age >= r_cooling_age) OR --'1 days'::interval) OR
+      (classify.last_status = 'cold' AND classify.last_age >= r_cold_age) OR --'7 days'::interval) OR
+      (classify.last_status = 'frozen' AND classify.last_age >= r_frozen_age) --'1 month'::interval)
+;
 END;
 $BODY$;
 
