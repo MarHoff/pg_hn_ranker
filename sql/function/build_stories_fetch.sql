@@ -21,6 +21,7 @@ LANGUAGE 'plpgsql'
 AS $BODY$
 DECLARE
 f_run_id bigint;
+f_run_ts timestamptz;
 rule jsonb ;
 r_new_repeat integer; 
 r_hot_repeat integer; 
@@ -62,6 +63,7 @@ IF r_frozen_age IS NULL THEN RAISE EXCEPTION 'frozen_age parameter of ruleset "%
 
 IF v_run_id IS NOT NULL THEN f_run_id := v_run_id; ELSE SELECT last_value INTO STRICT f_run_id FROM hn_ranker.run_id_seq; END IF;
 
+SELECT ts_run INTO STRICT f_run_ts FROM hn_ranker.run WHERE id=f_run_id;
 
 RETURN QUERY
 --Looking for candidates in last recorded run_story, gathering last status and "age" (in run) of that status
@@ -80,7 +82,7 @@ WITH
     last.status last_status,
     last.status_repeat last_status_repeat,
     last.ts_run last_ts_run,
-    current.ts_run-last.ts_run as last_age,
+    f_run_ts-last.ts_run as last_age,
     CASE
       WHEN
         last.status IS NULL OR
