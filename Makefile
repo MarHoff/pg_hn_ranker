@@ -13,7 +13,7 @@ FUNCTION := $(addprefix sql/function/, $(addsuffix .sql, $(FUNCTION)))
 VIEW := run_story_stats diagnose_errors
 VIEW := $(addprefix sql/view/, $(addsuffix .sql, $(VIEW)))
 
-#TESTS = $(wildcard TEST/SQL/*.sql)
+TESTS = $(wildcard test/sql/*.sql)
 
 usage:
 	@echo 'pg_hn_ranker usage : "make install" to instal the extension, "make build" to build dev version against source SQL'
@@ -24,8 +24,9 @@ releases/pg_hn_ranker--dev.sql : $(DOMAIN) $(TABLE) $(FUNCTION) $(VIEW)
 	@echo 'Building develloper version'
 	cat $(DOMAIN) > $@ && cat $(TABLE) >> $@ && cat $(FUNCTION) >> $@ && cat $(VIEW) >> $@
 
-#test:
-#	pg_prove -v --pset tuples_only=1 $(TESTS)
+.PHONY : installcheck
+installcheck:
+	pg_prove -v --pset tuples_only=1 $(TESTS)
 
 PG_CONFIG = pg_config
 PGXS := $(shell $(PG_CONFIG) --pgxs)
