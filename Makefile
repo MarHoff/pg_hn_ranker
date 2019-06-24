@@ -26,7 +26,7 @@ releases/pg_hn_ranker--dev.sql : $(DOMAIN) $(TABLE) $(FUNCTION) $(VIEW)
 
 .PHONY : installcheck
 installcheck:
-	pg_prove -v --pset tuples_only=1 $(TESTS)
+	pg_prove -d develop -v --pset tuples_only=1 $(TESTS)
 
 PG_CONFIG = pg_config
 PGXS := $(shell $(PG_CONFIG) --pgxs)
