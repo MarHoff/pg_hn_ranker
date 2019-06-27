@@ -8,7 +8,7 @@ LANGUAGE 'sql'
 
 AS $BODY$
 WITH
-get_rankings AS (SELECT * FROM hn_ranker.rankings('{topstories,beststories,newstories}')),
+get_rankings AS (SELECT * FROM hn_ranker.wget_rankings('{topstories,beststories,newstories}')),
 insert_run AS (
 INSERT INTO hn_ranker.run(
 	ts_run,

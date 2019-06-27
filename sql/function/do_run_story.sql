@@ -66,7 +66,7 @@ WITH
       (status = 'cold' AND last_age >= (param ->> 'cold_age')::interval) OR --'7 days'::interval) OR
       (status = 'frozen' AND last_age >= (param ->> 'frozen_age')::interval) --'1 month'::interval)
   ),
-  get_items AS (SELECT * FROM hn_ranker.items((SELECT array_agg(story_id) FROM filter_run_story))),
+  get_items AS (SELECT * FROM hn_ranker.wget_items((SELECT array_agg(story_id) FROM filter_run_story))),
 
   insert_run_story AS (
     INSERT INTO hn_ranker.run_story(
