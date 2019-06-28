@@ -5,6 +5,7 @@
 CREATE OR REPLACE FUNCTION hn_ranker.build_stories_classify( v_run_id bigint DEFAULT NULL, hnr_ruleset text DEFAULT 'production'::text )
 RETURNS TABLE (
   run_id bigint,
+  ts_run timestamptz,
   story_id bigint,
   topstories_rank integer,
   beststories_rank integer,
@@ -13,7 +14,6 @@ RETURNS TABLE (
   last_status hn_ranker.story_status,
   last_status_repeat integer,
   last_ts_run timestamptz,
-  last_age interval,
   new_status hn_ranker.story_status,
   fetch_now boolean
 )
@@ -22,7 +22,7 @@ LANGUAGE 'plpgsql'
 AS $BODY$
 DECLARE
 f_run_id bigint;
-f_run_ts timestamptz;
+f_ts_run timestamptz;
 rule jsonb ;
 r_new_repeat integer; 
 r_hot_repeat integer; 
@@ -34,6 +34,7 @@ r_cooling_age interval;
 r_cold_repeat integer; 
 r_cold_age interval; 
 r_frozen_age interval;
+r_frozen_window integer;
 BEGIN
 RAISE NOTICE 'hnr_ruleset: %', hnr_ruleset;
 
@@ -60,12 +61,13 @@ r_cold_age := (rule ->> 'cold_age')::interval;
 IF r_cold_age IS NULL THEN RAISE EXCEPTION 'cold_age parameter of ruleset "%" can''t be NULL!', hnr_ruleset; ELSE RAISE NOTICE 'r_cold_age: %', r_cold_age; END IF;
 r_frozen_age := (rule ->> 'frozen_age')::interval;
 IF r_frozen_age IS NULL THEN RAISE EXCEPTION 'frozen_age parameter of ruleset "%" can''t be NULL!', hnr_ruleset; ELSE RAISE NOTICE 'r_frozen_age: %', r_frozen_age; END IF;
-
+r_frozen_window := (rule ->> 'frozen_window')::integer;
+IF r_frozen_window IS NULL THEN RAISE EXCEPTION 'frozen_window parameter of ruleset "%" can''t be NULL!', hnr_ruleset; ELSE RAISE NOTICE 'r_frozen_window: %', r_frozen_window; END IF;
 
 IF v_run_id IS NOT NULL THEN f_run_id := v_run_id; ELSE SELECT last_value INTO STRICT f_run_id FROM hn_ranker.run_id_seq; END IF;
-RAISE NOTICE 'v_run_id: %', v_run_id;
+RAISE NOTICE 'f_run_id: %', f_run_id;
 
-SELECT ts_run INTO STRICT f_run_ts FROM hn_ranker.run WHERE id=f_run_id;
+SELECT run.ts_run INTO STRICT f_ts_run FROM hn_ranker.run WHERE id=f_run_id;
 
 RETURN QUERY
 --Looking for candidates in last recorded run_story, gathering last status and "age" (in run) of that status
@@ -76,6 +78,7 @@ WITH
   --Joining currents ranking vs last run and classifying candidates for fetching additional data
     SELECT
     f_run_id run_id,
+    f_ts_run ts_run,
     COALESCE(current.story_id,last.story_id) story_id,
     current.topstories_rank,
     current.beststories_rank,
@@ -84,7 +87,6 @@ WITH
     last.status last_status,
     last.status_repeat last_status_repeat,
     last.ts_run last_ts_run,
-    f_run_ts-last.ts_run as last_age,
     CASE
       WHEN
         last.status IS NULL OR
@@ -117,6 +119,7 @@ WITH
   )
 SELECT
   classify.run_id,
+  classify.ts_run,
   classify.story_id,
   classify.topstories_rank,
   classify.beststories_rank,
@@ -125,15 +128,17 @@ SELECT
   classify.last_status,
   classify.last_status_repeat,
   classify.last_ts_run,
-  classify.last_age,
   classify.new_status,
   (
     classify.new_status = 'new' OR
     classify.last_status <= 'hot' OR
-    (classify.last_status = 'tepid' AND classify.last_age >= r_tepid_age) OR --'59 min'::interval) OR
-    (classify.last_status = 'cooling' AND classify.last_age >= r_cooling_age) OR --'1 days'::interval) OR
-    (classify.last_status = 'cold' AND classify.last_age >= r_cold_age) OR --'7 days'::interval) OR
-    (classify.last_status = 'frozen' AND classify.last_age >= r_frozen_age) --'1 month'::interval)
+    (classify.last_status = 'tepid' AND age(classify.ts_run,classify.last_ts_run) >= r_tepid_age) OR --Fetch if older than age rule
+    (classify.last_status = 'cooling' AND age(classify.ts_run,classify.last_ts_run) >= r_cooling_age) OR --Fetch if older than age rule
+    (classify.last_status = 'cold' AND age(classify.ts_run,classify.last_ts_run) >= r_cold_age) OR --Fetch if older than age rule
+    (
+      classify.last_status IN ('unknown','frozen') AND
+      age(classify.ts_run,classify.last_ts_run) >= r_frozen_age AND --Fetch if older than age rule AND
+      hn_ranker.check_time_window(classify.ts_run,classify.last_ts_run,r_frozen_window)) --Seconds to midnight of interval lower than window
   ) AS fetch_now
 FROM classify
 ;
