@@ -1,8 +1,8 @@
--- FUNCTION: hn_ranker.build_stories_fetch(text)
+-- FUNCTION: hn_ranker.build_stories_classify(text)
 
--- DROP FUNCTION hn_ranker.build_stories_fetch(text);
+-- DROP FUNCTION hn_ranker.build_stories_classify(text);
 
-CREATE OR REPLACE FUNCTION hn_ranker.build_stories_fetch( v_run_id bigint DEFAULT NULL, hnr_ruleset text DEFAULT 'production'::text )
+CREATE OR REPLACE FUNCTION hn_ranker.build_stories_classify( v_run_id bigint DEFAULT NULL, hnr_ruleset text DEFAULT 'production'::text )
 RETURNS TABLE (
   run_id bigint,
   story_id bigint,
