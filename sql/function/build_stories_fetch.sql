@@ -14,7 +14,8 @@ RETURNS TABLE (
   last_status_repeat integer,
   last_ts_run timestamptz,
   last_age interval,
-  new_status hn_ranker.story_status
+  new_status hn_ranker.story_status,
+  fetch_now boolean
 )
 LANGUAGE 'plpgsql'
 
@@ -62,6 +63,7 @@ IF r_frozen_age IS NULL THEN RAISE EXCEPTION 'frozen_age parameter of ruleset "%
 
 
 IF v_run_id IS NOT NULL THEN f_run_id := v_run_id; ELSE SELECT last_value INTO STRICT f_run_id FROM hn_ranker.run_id_seq; END IF;
+RAISE NOTICE 'v_run_id: %', v_run_id;
 
 SELECT ts_run INTO STRICT f_run_ts FROM hn_ranker.run WHERE id=f_run_id;
 
@@ -113,14 +115,27 @@ WITH
     --,last.payload as last_payload                                                           
   FROM current FULL JOIN last ON current.story_id=last.story_id 
   )
-SELECT classify.*
-    FROM classify
-    WHERE
-      classify.last_status <= 'hot' OR
-      (classify.last_status = 'tepid' AND classify.last_age >= r_tepid_age) OR --'59 min'::interval) OR
-      (classify.last_status = 'cooling' AND classify.last_age >= r_cooling_age) OR --'1 days'::interval) OR
-      (classify.last_status = 'cold' AND classify.last_age >= r_cold_age) OR --'7 days'::interval) OR
-      (classify.last_status = 'frozen' AND classify.last_age >= r_frozen_age) --'1 month'::interval)
+SELECT
+  classify.run_id,
+  classify.story_id,
+  classify.topstories_rank,
+  classify.beststories_rank,
+  classify.newstories_rank,
+  classify.last_score,
+  classify.last_status,
+  classify.last_status_repeat,
+  classify.last_ts_run,
+  classify.last_age,
+  classify.new_status,
+  (
+    classify.new_status = 'new' OR
+    classify.last_status <= 'hot' OR
+    (classify.last_status = 'tepid' AND classify.last_age >= r_tepid_age) OR --'59 min'::interval) OR
+    (classify.last_status = 'cooling' AND classify.last_age >= r_cooling_age) OR --'1 days'::interval) OR
+    (classify.last_status = 'cold' AND classify.last_age >= r_cold_age) OR --'7 days'::interval) OR
+    (classify.last_status = 'frozen' AND classify.last_age >= r_frozen_age) --'1 month'::interval)
+  ) AS fetch_now
+FROM classify
 ;
 END;
 $BODY$;
