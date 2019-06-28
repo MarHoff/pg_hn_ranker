@@ -16,8 +16,8 @@ PREPARE run_ranks(bigint) AS
 SELECT topstories, beststories, newstories FROM hn_ranker.run WHERE id=$1;
 
 SELECT results_eq(
-    $$EXECUTE revert_build_stories_ranks(1);$$,
-    $$EXECUTE run_ranks(1);$$,
+    $$EXECUTE revert_build_stories_ranks(currval('hn_ranker.run_id_seq'::regclass)::bigint);$$,
+    $$EXECUTE run_ranks(currval('hn_ranker.run_id_seq'::regclass)::bigint);$$,
     'By aggregating result of build_stories_ranks for a given run we should be able to recreate run arrays'
 );
 
