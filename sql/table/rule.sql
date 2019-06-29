@@ -26,6 +26,7 @@ $${
 "cooling_age":"1 minute",
 "cold_repeat":1,
 "cold_age":"1 minute",
+"failed_repeat":4,
 "frozen_age":"1 minute",
 "frozen_window":0
 }$$::jsonb),
@@ -41,6 +42,7 @@ $${
 "cooling_age":"59 minute",
 "cold_repeat":2,
 "cold_age":"6 hour",
+"failed_repeat":4,
 "frozen_age":"7 day",
 "frozen_window":600
 }$$)
