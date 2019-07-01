@@ -13,11 +13,11 @@ AS $BODY$
 BEGIN
 IF t_window > 86399 OR t_window < 0 THEN
 	RAISE EXCEPTION 'Time windows can''t be negative or larger than max seconds past midnight (86399)!';
-ELSE RAISE NOTICE 't_window: %', t_window;
+--ELSE RAISE DEBUG 't_window: %', t_window;
 END IF;
 
-RAISE NOTICE 'age: %', age(t_new,t_old);
-RAISE NOTICE 'second to midnight: %', to_char(age(t_new,t_old),'SSSS');
+--RAISE DEBUG 'age: %', age(t_new,t_old);
+--RAISE DEBUG 'second to midnight: %', to_char(age(t_new,t_old),'SSSS');
 
 IF t_window = 0 THEN
 	RETURN true;
