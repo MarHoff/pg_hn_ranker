@@ -76,7 +76,7 @@ RETURN QUERY
 --Looking for candidates in last recorded run_story, gathering last status and "age" (in run) of that status
 WITH
   current AS (SELECT * FROM hn_ranker.build_stories_ranks(ARRAY[f_run_id])),
-  last AS (SELECT * FROM hn_ranker.build_stories_last(f_run_id)),
+  last AS (SELECT * FROM hn_ranker.build_stories_status(f_run_id-1)),
   classify AS (
   --Joining currents ranking vs last run and classifying candidates for fetching additional data
     SELECT

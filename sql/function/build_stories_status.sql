@@ -1,8 +1,8 @@
--- FUNCTION: hn_ranker.build_stories_last(text)
+-- FUNCTION: hn_ranker.build_stories_status(text)
 
--- DROP FUNCTION hn_ranker.build_stories_last(text);
+-- DROP FUNCTION hn_ranker.build_stories_status(text);
 
-CREATE OR REPLACE FUNCTION hn_ranker.build_stories_last(v_run_id bigint DEFAULT NULL )
+CREATE OR REPLACE FUNCTION hn_ranker.build_stories_status(v_run_id bigint DEFAULT NULL )
 RETURNS TABLE (
   run_id bigint,
   story_id bigint,
@@ -35,7 +35,7 @@ sel_run_story AS (
       ORDER BY run_story.story_id,run_story.run_id,run_story.status
       ) status_repeat
   FROM hn_ranker.run_story
-  WHERE v_run_id IS NULL OR run_story.run_id < v_run_id
+  WHERE v_run_id IS NULL OR run_story.run_id <= v_run_id
 )
 SELECT
     sel_run_story.run_id,
