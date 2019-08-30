@@ -13,11 +13,17 @@
   Going further old stories will kept on being fetched according to age parameter
   The upgrade script will include an update statement that will set last run_story of each story that are older than one week will be flagged as 'unknow' to avoid massive fetch after update and use frozen_window mechanism to ease the process.
 
-- Reworking Makefile to include helper script to reinstall, backup and restore the application in a developement context (they expect to run as postgres on a database called develop)
-  Syntax is
-    - make do_backup
-    - make do_reinstall
-    - make do_retsore
+- Reworking Makefile build system to prefigure a cross-software building framework pg_pmbuildext.
+  Versioning and configuration is now handled in a sub-makefile "pg_pmbuildext.makefile"
+
+  Usage :
+       "make install" : install the extension through PGXS
+         "make build" : build/rebuild against source SQL
+    "make parameters" : check current active pg_pmbuildext parameters
+   "make test_deploy" : wipe and deploy extension for developement purpose in a test database
+   "make test_backup" : backup data-only dump of the extension FROM test database
+  "make test_restore" : restore data-only dump of the extension TO test database
+  "make installcheck" : run pg_prove test against test database
 
 - Stories with 'frozen' or 'unknown' status will be fetched not only based on age parameter but also according to a parametrable daily time windows.
   This is useful after a server failure so that a massive number of olds stories won't be fetched all at once.

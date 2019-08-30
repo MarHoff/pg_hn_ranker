@@ -1,3 +1,2 @@
-releases/pg_hn_ranker--dev.sql
-pg_hn_ranker.bak
-pg_hn_ranker_develop.bak
+releases/pg_hn_ranker--*dev*.sql
+pg_hn_ranker*.bak

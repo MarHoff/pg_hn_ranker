@@ -1,53 +1,77 @@
-EXTENSION = pg_hn_ranker
+#This Makefile is a standard pg_pmbuildext building framework for a PostgreSQL extension
+#Dont edit this file directly edit pg_pmbuildext.makefile instead
+#Copyright Martin Hoffmann 2019 - Version 0.1
+
+SHELL = /bin/sh
 DATA = $(wildcard releases/*.sql)
-
-DOMAIN := ranking story_status object
-DOMAIN := $(addprefix sql/domain/, $(addsuffix .sql, $(DOMAIN)))
-
-TABLE := run story run_story error ruleset rule config_dump
-TABLE := $(addprefix sql/table/, $(addsuffix .sql, $(TABLE)))
-
-FUNCTION := check_time_window max_id wget_rankings wget_items build_stories_ranks build_stories_status build_stories_classify do_run do_run_story do_all
-FUNCTION := $(addprefix sql/function/, $(addsuffix .sql, $(FUNCTION)))
-
-VIEW := run_story_stats diagnose_errors
-VIEW := $(addprefix sql/view/, $(addsuffix .sql, $(VIEW)))
-
+EXTRA_CLEAN = $(wildcard releases/*dev*.sql)
 TESTS = $(wildcard test/sql/*.sql)
+BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
+COMMIT := $(shell git rev-parse --short HEAD)
+BUILD := $(if $(findstring $(BRANCH), master release),$(CURRENTRELEASE),dev_$(COMMIT))
 
-usage:
-	@echo 'pg_hn_ranker usage :'
-	@echo '  "make install" to instal the extension'
-	@echo '  "make build" to build dev version against source SQL'
-	@echo '  "make do_backup" to backup curent data-only dump of the extension in custom format'
-	@echo '  "make do_reinstall" to wipe and reinstal extension'
-	@echo '  "make do_restore" to wipe and reinstal extension then restore previous backup'
+.PHONY : test_backup test_deploy test_restore installcheck splash parameters
+
+usage : splash
+	@echo 'Usage :'
+	@echo '       "make install" : install the extension through PGXS'
+	@echo '         "make build" : build/rebuild against source SQL'
+	@echo '    "make parameters" : check current active pg_pmbuildext parameters'
+	@echo '   "make test_deploy" : wipe and deploy extension for developement purpose in a test database'
+	@echo '   "make test_backup" : backup data-only dump of the extension FROM test database'
+	@echo '  "make test_restore" : restore data-only dump of the extension TO test database'
+	@echo '  "make installcheck" : run pg_prove test against test database'
+	@echo
+
+BUILD_MAIN_SCRIPT = releases/$(EXTENSION)--$(BUILD).sql
+BUILD_UPDATE_SCRIPT = releases/$(EXTENSION)--$(LASTRELEASE)--$(BUILD).sql
+BUILD_EXTENSION_CONTROL = $(EXTENSION).control
+BUILD_MAKEFILE := Makefile pg_pmbuildext.makefile
+
+include pg_pmbuildext.makefile
+
+build : splash parameters $(BUILD_EXTENSION_CONTROL) $(BUILD_MAIN_SCRIPT) $(BUILD_UPDATE_SCRIPT)
 
 
+test_backup :
+	sudo -u $(TESTUSER) pg_dump --format=p --data-only --no-owner --no-privileges --no-tablespaces --schema "hn_ranker" $(TESTDATABASE) > pg_hn_ranker.bak
 
-build : releases/pg_hn_ranker--dev.sql
-
-releases/pg_hn_ranker--dev.sql : $(DOMAIN) $(TABLE) $(FUNCTION) $(VIEW)
-	@echo 'Building develloper version'
-	cat $(DOMAIN) > $@ && cat $(TABLE) >> $@ && cat $(FUNCTION) >> $@ && cat $(VIEW) >> $@
-
-.PHONY : installcheck do_backup do_reinstall do_restore
-
-do_backup :
-	sudo -u postgres pg_dump --format=p --data-only --no-owner --no-privileges --no-tablespaces --schema "hn_ranker" "develop" > pg_hn_ranker.bak
-
-do_reinstall :
+test_deploy :
 	$(MAKE) build
-	$(MAKE) install
-	sudo -u postgres psql -d develop -c "DROP EXTENSION IF EXISTS pg_hn_ranker;"
-	sudo -u postgres psql -d develop -c "CREATE EXTENSION pg_hn_ranker;"
+	sudo $(MAKE) install
+	sudo -u $(TESTUSER) psql -c "DROP DATABASE IF EXISTS $(TESTDATABASE);"
+	sudo -u $(TESTUSER) psql -c "CREATE DATABASE $(TESTDATABASE);"
+	sudo -u $(TESTUSER) psql -d $(TESTDATABASE) -c "CREATE EXTENSION $(EXTENSION) VERSION '$(BUILD)' CASCADE;"
 
-do_restore : do_reinstall
-	sudo -u postgres psql -d develop -f pg_hn_ranker.bak
-	sudo -u postgres psql -d develop -c "SELECT setval('hn_ranker.run_id_seq', (SELECT max(id) FROM hn_ranker.run), true);"
+test_restore : test_deploy
+	sudo -u $(TESTUSER) psql -d $(TESTDATABASE) -f pg_hn_ranker.bak
+	sudo -u $(TESTUSER) psql -d $(TESTDATABASE) -c "SELECT setval('$(EXTENSION_SCHEMA).run_id_seq', (SELECT max(id) FROM $(EXTENSION_SCHEMA).run), true);"
 
 installcheck:
-	pg_prove -d develop -v --pset tuples_only=1 $(TESTS)
+	sudo -u $(TESTUSER) psql -d $(TESTDATABASE) -c "CREATE EXTENSION IF NOT EXISTS pgtap;"
+	sudo -u $(TESTUSER) pg_prove -d $(TESTDATABASE) -v --pset tuples_only=1 $(TESTS)
+
+splash :
+	@echo '****************************************************'
+	@echo 'Build system for PostgreSQL extension $(EXTENSION) '
+	@echo 'Powered by pg_pmbuildext building framework Version 0.1'
+	@echo '****************************************************'
+
+parameters: splash
+	@echo 'Commit $(COMMIT) on branch $(BRANCH)'
+	@echo '****************************************************'
+	@echo '              EXTENSION : $(EXTENSION)'
+	@echo '       EXTENSION_SCHEMA : $(EXTENSION_SCHEMA)'
+	@echo '            LASTRELEASE : $(LASTRELEASE)'
+	@echo '         CURRENTRELEASE : $(CURRENTRELEASE)'
+	@echo '                  BUILD : $(BUILD)'
+	@echo 'BUILD_EXTENSION_CONTROL : $(BUILD_EXTENSION_CONTROL)'
+	@echo '      BUILD_MAIN_SCRIPT : $(BUILD_MAIN_SCRIPT)'
+	@echo '    BUILD_UPDATE_SCRIPT : $(BUILD_UPDATE_SCRIPT)'
+	@echo
+	@echo '           TESTDATABASE : $(TESTDATABASE)'
+	@echo '               TESTUSER : $(TESTUSER)'
+	@echo
 
 PG_CONFIG = pg_config
 PGXS := $(shell $(PG_CONFIG) --pgxs)
