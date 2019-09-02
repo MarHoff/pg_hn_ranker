@@ -1,6 +1,6 @@
 #This Makefile is a standard pg_pmbuildext building framework for a PostgreSQL extension
 #Dont edit this file directly edit pg_pmbuildext.makefile instead
-#Copyright Martin Hoffmann 2019 - Version 0.1
+#Copyright Martin Hoffmann 2019 - Version 0.2
 
 SHELL = /bin/sh
 DATA = $(wildcard releases/*.sql)
@@ -34,7 +34,7 @@ build : splash parameters $(BUILD_EXTENSION_CONTROL) $(BUILD_MAIN_SCRIPT) $(BUIL
 
 
 test_backup :
-	sudo -u $(TESTUSER) pg_dump --format=p --data-only --no-owner --no-privileges --no-tablespaces --schema "hn_ranker" $(TESTDATABASE) > pg_hn_ranker.bak
+	sudo -u $(TESTUSER) pg_dump --format=c --no-owner --no-privileges --no-tablespaces --schema "hn_ranker" $(TESTDATABASE) > pg_hn_ranker.bak
 
 test_deploy :
 	$(MAKE) build

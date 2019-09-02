@@ -2,10 +2,11 @@
 
 ##Version 0.X
 - TODO Add a target for and Postgresql Extension upgrade script between previous release and current build
-- TODO Improve version awarness from the Makefile perspective
 - TODO use rulsets in pg_pmwget wrappers
 - TODO Implements garbage collector
-- TODO Alter schema to avoid redundancy between run and run_story rankings storage
+
+- Altering schema to avoid redundancy between run and run_story rankings storage
+  Dropping theses columns on table run_story : topstories_rank, beststories_rank, newstories_rank, success
 
 - Refactoring code of the previously monolithic do_run_story function into multiple more easily testable and reusable functions
 
