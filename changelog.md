@@ -1,14 +1,37 @@
 #Changelog
 
 ##Version 0.X
+- TODO Add a target for and Postgresql Extension upgrade script between previous release and current build
+- TODO Improve version awarness from the Makefile perspective
 - TODO use rulsets in pg_pmwget wrappers
 - TODO Implements garbage collector
 - TODO Alter schema to avoid redundancy between run and run_story rankings storage
 
+- Refactoring code of the previously monolithic do_run_story function into multiple more easily testable and reusable functions
+
+- Fixing a nasty bug of previous versions, due to a wrong JOIN clause, onlys stories that appeared to at least one ranking were fetched.
+  Going further old stories will kept on being fetched according to age parameter
+  The upgrade script will include an update statement that will set last run_story of each story that are older than one week will be flagged as 'unknow' to avoid massive fetch after update and use frozen_window mechanism to ease the process.
+
+- Reworking Makefile to include helper script to reinstall, backup and restore the application in a developement context (they expect to run as postgres on a database called develop)
+  Syntax is
+    - make do_backup
+    - make do_reinstall
+    - make do_retsore
+
+- Stories with 'frozen' or 'unknown' status will be fetched not only based on age parameter but also according to a parametrable daily time windows.
+  This is useful after a server failure so that a massive number of olds stories won't be fetched all at once.
+  Rule 'frozen_window' will define a time window in seconds so that frozen/unknow story can only be fetched if within widow from same 'seconds past midnight' than last day they were fetched. Maximum value is number of second in a day 86399. If set to 0 no time window is applied and all old enought stories according to 'frozen_age' will be fetched unconditionally.
+
+ - Introducing test with a rather minimalist intial coverage
+   calls them using 'make installcheck'
+   It expect that an application is deployed on a database called 'develop' (typically using make do_reinstall)
+
+
 ###Version 0.1.3
 - Tuning retries parameters for rankings wrapper
 - Adding a proper diagnose_error view
-- Removing foreign key for dump/restore performance as we don't handle constraints eception anyway for now
+- Removing foreign key for dump/restore performance as we don't handle constraints exception anyway for now
 
 ###Version 0.1.2
 - Handling case when API return missing or deleted stories

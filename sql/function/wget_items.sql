@@ -1,12 +1,12 @@
--- FUNCTION: hn_ranker.rankings(extschema@.ranking[])
+-- FUNCTION: hn_ranker.wget_items(bigint[])
 
-CREATE OR REPLACE FUNCTION @extschema@.rankings(
-  ranking_array @extschema@.ranking[]
+CREATE OR REPLACE FUNCTION hn_ranker.wget_items(
+  id_array bigint[]
 )
 RETURNS TABLE (
-  id @extschema@.ranking,
+  id bigint,
   url url,
-  payload bigint[],
+  payload jsonb,
   ts_end timestamptz,
   duration double precision,
   batch bigint,
@@ -18,20 +18,20 @@ RETURNS TABLE (
 AS $BODY$
 
 DECLARE
-wget_ranking @extschema@.ranking[];
+wget_id bigint[];
 wget_query text;
 BEGIN
 
-wget_ranking := "ranking_array";
+wget_id := "id_array";
 
-wget_query :='https://hacker-news.firebaseio.com/v0/%s.json';
+wget_query :='https://hacker-news.firebaseio.com/v0/item/%s.json';
 RAISE DEBUG 'wget_query : %', wget_query;
-RAISE DEBUG 'wget_ranking : %', wget_ranking;
+RAISE DEBUG 'wget_id : %', wget_id;
 
 
 RETURN QUERY
 WITH
-tunnest AS (SELECT DISTINCT tid FROM unnest(wget_ranking) tid ORDER BY tid),
+tunnest AS (SELECT DISTINCT tid FROM unnest(wget_id) tid ORDER BY tid),
 tsel AS (SELECT tid, format(wget_query,tid) url FROM tunnest),
 tget AS (
   SELECT * FROM
@@ -45,7 +45,7 @@ tget AS (
       i_delimiter := '@wget_token@'::text,
       i_delay := 0,
       r_min_latency := 0,
-      r_timeout := 10,
+      r_timeout := 5,
       r_tries := 1,
       r_waitretry := 0,
       r_parallel_jobs := 20,
@@ -53,13 +53,20 @@ tget AS (
       r_delay := 5,
       batch_size := 2000,
       batch_retries := 2,
-      batch_retries_failrate := 1
+      batch_retries_failrate := 0.05
     )
 )
-SELECT tid id, tsel.url::url, conv.ids::bigint[], tget.ts_end, tget.duration, tget.batch, tget.retries, tget.batch_failrate
-FROM tsel
-LEFT JOIN tget ON tsel.url=tget.url
-LEFT JOIN LATERAL (SELECT array_agg(a.id::bigint) ids FROM jsonb_array_elements_text(tget.payload::jsonb) WITH ORDINALITY AS a(id, hn_rank)) conv ON true;
+SELECT
+tid id,
+  tsel.url::url,
+  --API might return 'null' json value so we need to diferentiate that from SQL NULL returned by wget failure
+  CASE WHEN tget.payload='null' THEN to_jsonb('json_null'::text) ELSE tget.payload::jsonb END payload,
+  tget.ts_end,
+  tget.duration,
+  tget.batch,
+  tget.retries,
+  tget.batch_failrate
+FROM tsel LEFT JOIN tget ON tsel.url=tget.url;
 
 END
 

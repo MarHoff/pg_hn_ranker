@@ -20,14 +20,15 @@ $${
 "new_repeat":1,
 "hot_repeat":1,
 "hot_rank":30,
-"hot_rankbump":30,
 "tepid_rank":60,
 "tepid_age":"1 minute",
 "cooling_repeat":1,
 "cooling_age":"1 minute",
 "cold_repeat":1,
 "cold_age":"1 minute",
-"frozen_age":"1 minute"
+"failed_repeat":4,
+"frozen_age":"1 minute",
+"frozen_window":0
 }$$::jsonb),
 
 ('production', 'run_story_param', 'jsonb',
@@ -35,13 +36,14 @@ $${
 "new_repeat":12,
 "hot_repeat":6,
 "hot_rank":30,
-"hot_rankbump":30,
 "tepid_rank":60,
 "tepid_age":"19 minute",
 "cooling_repeat":12,
 "cooling_age":"59 minute",
 "cold_repeat":2,
 "cold_age":"6 hour",
-"frozen_age":"7 day"
+"failed_repeat":4,
+"frozen_age":"7 day",
+"frozen_window":600
 }$$)
 );
