@@ -9,7 +9,7 @@ EXTENSION := pg_hn_ranker
 EXTENSION_SCHEMA := hn_ranker
 
 #Versioning management
-LASTRELEASE    := 0.1.1
+LASTRELEASE    := 0.1.4
 CURRENTRELEASE := 0.2.0
 
 #Parameters for deploying test database
