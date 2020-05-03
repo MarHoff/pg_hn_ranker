@@ -1,0 +1,4 @@
+WITH a AS(SELECT id, ((ts_run-lag(ts_run,1) OVER (ORDER BY ts_run))>'7 min'::interval OR (lead(ts_run,1) OVER (ORDER BY ts_run)-ts_run)>'7 min'::interval) rupture,
+ts_run, topstories, beststories, newstories, ts_end FROM hn_ranker.run)
+
+SELECT * from a WHERE rupture
