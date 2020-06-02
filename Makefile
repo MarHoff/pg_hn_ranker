@@ -20,7 +20,7 @@ usage : splash
 	@echo '   "make test_deploy" : wipe and deploy extension for developement purpose in a test database'
 	@echo '   "make test_backup" : backup data-only dump of the extension FROM test database'
 	@echo '  "make test_restore" : restore data-only dump of the extension TO test database'
-	@echo '  "make installcheck" : run pg_prove test against test database'
+	@echo '  "make installcheck" : deploy test database and run all tests with pg_prove'
 	@echo
 
 BUILD_MAIN_SCRIPT = releases/$(EXTENSION)--$(BUILD).sql
@@ -47,9 +47,10 @@ test_restore : test_deploy
 	sudo -u $(TESTUSER) psql -d $(TESTDATABASE) -f pg_hn_ranker.bak
 	sudo -u $(TESTUSER) psql -d $(TESTDATABASE) -c "SELECT setval('$(EXTENSION_SCHEMA).run_id_seq', (SELECT max(id) FROM $(EXTENSION_SCHEMA).run), true);"
 
-installcheck:
+installcheck: test_deploy
 	sudo -u $(TESTUSER) psql -d $(TESTDATABASE) -c "CREATE EXTENSION IF NOT EXISTS pgtap;"
 	sudo -u $(TESTUSER) pg_prove -d $(TESTDATABASE) -v --pset tuples_only=1 $(TESTS)
+	sudo -u $(TESTUSER) psql -c "DROP DATABASE IF EXISTS $(TESTDATABASE);"
 
 splash :
 	@echo '****************************************************'
