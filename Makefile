@@ -1,6 +1,59 @@
-EXTENSION = pg_hn_ranker
-DATA = $(wildcard releases/*.sql)
+#This Makefile for a PostgreSQL extension is based on pg_pmbuildex building framework
+#This line include pre-script that make available numerous shortcuts and recipe to use in you Makefile
+include pg_gitbuildext.premake
 
+
+##########################################################################################
+# Mandatory parameters                                                                   #
+##########################################################################################
+
+#General information about the extension
+EXTENSION := pg_hn_ranker
+EXTENSION_SCHEMA := hn_ranker
+
+#Versioning management
+LASTRELEASE    := 0.1.4
+CURRENTRELEASE := 0.1.5
+
+#Parameters for deploying test database
+TESTDATABASE := pg_hn_ranker_test
+TESTUSER := postgres
+
+
+##########################################################################################
+# Mandatory recipes                                                                      #
+##########################################################################################
+
+#Recipe to build the ccontrol file of the extension
+$(BUILD_EXTENSION_CONTROL) :
+	@echo 'Building $(BUILD_EXTENSION_CONTROL)'
+	@echo "# $(EXTENSION) extension" > $@ && \
+	echo "comment = 'Side project to gather data about hn post ranking evolution'" >> $@ && \
+	echo "default_version = '$(CURRENTRELEASE)'" >> $@ && \
+	echo "relocatable = false" >> $@ && \
+	echo "schema = $(EXTENSION_SCHEMA)" >> $@ && \
+	echo "requires = 'plsh, pmwget'" >> $@
+
+#Recipe to build current release instalation script
+$(BUILD_MAIN_SCRIPT) : $(DOMAIN) $(TABLE) $(FUNCTION) $(VIEW)
+	@echo 'Building $(BUILD_MAIN_SCRIPT)'
+	@cat $(DOMAIN) > $@ && \
+	cat $(TABLE) >> $@ && \
+	cat $(FUNCTION) >> $@ && \
+	cat $(VIEW) >> $@
+
+#Recipe to build upgrade script from last release to current release
+#Keep recipe empty if not needed
+$(BUILD_UPDATE_SCRIPT) :
+	@echo 'Building $(BUILD_UPDATE_SCRIPT)'
+	@echo 'No upgrade script defined yet!'
+
+
+##########################################################################################
+# Additional content                                                                     #
+##########################################################################################
+
+#Any 
 DOMAIN := ranking story_status object
 DOMAIN := $(addprefix sql/domain/, $(addsuffix .sql, $(DOMAIN)))
 
@@ -13,42 +66,6 @@ FUNCTION := $(addprefix sql/function/, $(addsuffix .sql, $(FUNCTION)))
 VIEW := run_story_stats diagnose_errors
 VIEW := $(addprefix sql/view/, $(addsuffix .sql, $(VIEW)))
 
-TESTS = $(wildcard test/sql/*.sql)
 
-usage:
-	@echo 'pg_hn_ranker usage :'
-	@echo '  "make install" to instal the extension'
-	@echo '  "make build" to build dev version against source SQL'
-	@echo '  "make do_backup" to backup curent data-only dump of the extension in custom format'
-	@echo '  "make do_reinstall" to wipe and reinstal extension'
-	@echo '  "make do_restore" to wipe and reinstal extension then restore previous backup'
-
-
-
-build : releases/pg_hn_ranker--dev.sql
-
-releases/pg_hn_ranker--dev.sql : $(DOMAIN) $(TABLE) $(FUNCTION) $(VIEW)
-	@echo 'Building develloper version'
-	cat $(DOMAIN) > $@ && cat $(TABLE) >> $@ && cat $(FUNCTION) >> $@ && cat $(VIEW) >> $@
-
-.PHONY : installcheck do_backup do_reinstall do_restore
-
-do_backup :
-	sudo -u postgres pg_dump --format=p --data-only --no-owner --no-privileges --no-tablespaces --schema "hn_ranker" "develop" > pg_hn_ranker.bak
-
-do_reinstall :
-	$(MAKE) build
-	$(MAKE) install
-	sudo -u postgres psql -d develop -c "DROP EXTENSION IF EXISTS pg_hn_ranker;"
-	sudo -u postgres psql -d develop -c "CREATE EXTENSION pg_hn_ranker;"
-
-do_restore : do_reinstall
-	sudo -u postgres psql -d develop -f pg_hn_ranker.bak
-	sudo -u postgres psql -d develop -c "SELECT setval('hn_ranker.run_id_seq', (SELECT max(id) FROM hn_ranker.run), true);"
-
-installcheck:
-	pg_prove -d develop -v --pset tuples_only=1 $(TESTS)
-
-PG_CONFIG = pg_config
-PGXS := $(shell $(PG_CONFIG) --pgxs)
-include $(PGXS)
+#This line include post-script that perform the actual build & deployement + link PGXS
+include pg_gitbuildext.postmake
