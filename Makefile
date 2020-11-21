@@ -1,79 +1,71 @@
-#This Makefile is a standard pg_pmbuildext building framework for a PostgreSQL extension
-#Dont edit this file directly edit pg_pmbuildext.makefile instead
-#Copyright Martin Hoffmann 2019 - Version 0.2
-
-SHELL = /bin/sh
-DATA = $(wildcard releases/*.sql)
-EXTRA_CLEAN = $(wildcard releases/*dev*.sql)
-TESTS = $(wildcard test/sql/*.sql)
-BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
-COMMIT := $(shell git rev-parse --short HEAD)
-BUILD := $(if $(findstring $(BRANCH), master release),$(CURRENTRELEASE),dev_$(COMMIT))
-
-.PHONY : test_backup test_deploy test_restore installcheck splash parameters
-
-usage : splash
-	@echo 'Usage :'
-	@echo '       "make install" : install the extension through PGXS'
-	@echo '         "make build" : build/rebuild against source SQL'
-	@echo '    "make parameters" : check current active pg_pmbuildext parameters'
-	@echo '   "make test_deploy" : wipe and deploy extension for developement purpose in a test database'
-	@echo '   "make test_backup" : backup data-only dump of the extension FROM test database'
-	@echo '  "make test_restore" : restore data-only dump of the extension TO test database'
-	@echo '  "make installcheck" : deploy test database and run all tests with pg_prove'
-	@echo
-
-BUILD_MAIN_SCRIPT = releases/$(EXTENSION)--$(BUILD).sql
-BUILD_UPDATE_SCRIPT = releases/$(EXTENSION)--$(LASTRELEASE)--$(BUILD).sql
-BUILD_EXTENSION_CONTROL = $(EXTENSION).control
-BUILD_MAKEFILE := Makefile pg_pmbuildext.makefile
-
-include pg_pmbuildext.makefile
-
-build : splash parameters $(BUILD_EXTENSION_CONTROL) $(BUILD_MAIN_SCRIPT) $(BUILD_UPDATE_SCRIPT)
+#This Makefile for a PostgreSQL extension is based on pg_pmbuildex building framework
+#This line include pre-script that make available numerous shortcuts and recipe to use in you Makefile
+include pg_gitbuildext.premake
 
 
-test_backup :
-	sudo -u $(TESTUSER) pg_dump --format=c --no-owner --no-privileges --no-tablespaces --schema "hn_ranker" $(TESTDATABASE) > pg_hn_ranker.bak
+##########################################################################################
+# Mandatory parameters                                                                   #
+##########################################################################################
 
-test_deploy :
-	$(MAKE) build
-	sudo $(MAKE) install
-	sudo -u $(TESTUSER) psql -c "DROP DATABASE IF EXISTS $(TESTDATABASE);"
-	sudo -u $(TESTUSER) psql -c "CREATE DATABASE $(TESTDATABASE);"
-	sudo -u $(TESTUSER) psql -d $(TESTDATABASE) -c "CREATE EXTENSION $(EXTENSION) VERSION '$(BUILD)' CASCADE;"
+#General information about the extension
+EXTENSION := pg_hn_ranker
+EXTENSION_SCHEMA := hn_ranker
 
-test_restore : test_deploy
-	sudo -u $(TESTUSER) psql -d $(TESTDATABASE) -f pg_hn_ranker.bak
-	sudo -u $(TESTUSER) psql -d $(TESTDATABASE) -c "SELECT setval('$(EXTENSION_SCHEMA).run_id_seq', (SELECT max(id) FROM $(EXTENSION_SCHEMA).run), true);"
+#Versioning management
+LASTRELEASE    := 0.1.4
+CURRENTRELEASE := 0.2.0
 
-installcheck: test_deploy
-	sudo -u $(TESTUSER) psql -d $(TESTDATABASE) -c "CREATE EXTENSION IF NOT EXISTS pgtap;"
-	sudo -u $(TESTUSER) pg_prove -d $(TESTDATABASE) -v --pset tuples_only=1 $(TESTS)
-	sudo -u $(TESTUSER) psql -c "DROP DATABASE IF EXISTS $(TESTDATABASE);"
+#Parameters for deploying test database
+TESTDATABASE := pg_hn_ranker_test
+TESTUSER := postgres
 
-splash :
-	@echo '****************************************************'
-	@echo 'Build system for PostgreSQL extension $(EXTENSION) '
-	@echo 'Powered by pg_pmbuildext building framework Version 0.1'
-	@echo '****************************************************'
 
-parameters: splash
-	@echo 'Commit $(COMMIT) on branch $(BRANCH)'
-	@echo '****************************************************'
-	@echo '              EXTENSION : $(EXTENSION)'
-	@echo '       EXTENSION_SCHEMA : $(EXTENSION_SCHEMA)'
-	@echo '            LASTRELEASE : $(LASTRELEASE)'
-	@echo '         CURRENTRELEASE : $(CURRENTRELEASE)'
-	@echo '                  BUILD : $(BUILD)'
-	@echo 'BUILD_EXTENSION_CONTROL : $(BUILD_EXTENSION_CONTROL)'
-	@echo '      BUILD_MAIN_SCRIPT : $(BUILD_MAIN_SCRIPT)'
-	@echo '    BUILD_UPDATE_SCRIPT : $(BUILD_UPDATE_SCRIPT)'
-	@echo
-	@echo '           TESTDATABASE : $(TESTDATABASE)'
-	@echo '               TESTUSER : $(TESTUSER)'
-	@echo
+##########################################################################################
+# Mandatory recipes                                                                      #
+##########################################################################################
 
-PG_CONFIG = pg_config
-PGXS := $(shell $(PG_CONFIG) --pgxs)
-include $(PGXS)
+#Recipe to build the ccontrol file of the extension
+$(BUILD_EXTENSION_CONTROL) :
+	@echo 'Building $(BUILD_EXTENSION_CONTROL)'
+	@echo "# $(EXTENSION) extension" > $@ && \
+	echo "comment = 'Side project to gather data about hn post ranking evolution'" >> $@ && \
+	echo "default_version = '$(CURRENTRELEASE)'" >> $@ && \
+	echo "relocatable = false" >> $@ && \
+	echo "schema = $(EXTENSION_SCHEMA)" >> $@ && \
+	echo "requires = 'plsh, pmwget'" >> $@
+
+#Recipe to build current release instalation script
+$(BUILD_MAIN_SCRIPT) : $(DOMAIN) $(TABLE) $(FUNCTION) $(VIEW)
+	@echo 'Building $(BUILD_MAIN_SCRIPT)'
+	@cat $(DOMAIN) > $@ && \
+	cat $(TABLE) >> $@ && \
+	cat $(FUNCTION) >> $@ && \
+	cat $(VIEW) >> $@
+
+#Recipe to build upgrade script from last release to current release
+#Keep recipe empty if not needed
+$(BUILD_UPDATE_SCRIPT) :
+	@echo 'Building $(BUILD_UPDATE_SCRIPT)'
+	@echo 'No upgrade script defined yet!'
+
+
+##########################################################################################
+# Additional content                                                                     #
+##########################################################################################
+
+#Any 
+DOMAIN := ranking story_status object
+DOMAIN := $(addprefix sql/domain/, $(addsuffix .sql, $(DOMAIN)))
+
+TABLE := run story run_story error ruleset rule config_dump
+TABLE := $(addprefix sql/table/, $(addsuffix .sql, $(TABLE)))
+
+FUNCTION := check_time_window max_id wget_rankings wget_items build_stories_ranks build_stories_status build_stories_classify do_run do_run_story do_all
+FUNCTION := $(addprefix sql/function/, $(addsuffix .sql, $(FUNCTION)))
+
+VIEW := run_story_stats diagnose_errors
+VIEW := $(addprefix sql/view/, $(addsuffix .sql, $(VIEW)))
+
+
+#This line include post-script that perform the actual build & deployement + link PGXS
+include pg_gitbuildext.postmake
