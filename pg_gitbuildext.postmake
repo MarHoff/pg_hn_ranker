@@ -27,7 +27,7 @@ installcheck: test_deploy
 splash :
 	@echo '****************************************************'
 	@echo 'Build system for PostgreSQL extension $(EXTENSION) '
-	@echo 'Powered by pg_gitbuildext building framework Version 0.1'
+	@echo 'Powered by pg_gitbuildext building framework Version 0.3'
 	@echo '****************************************************'
 
 parameters: splash
