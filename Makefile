@@ -25,7 +25,7 @@ TESTUSER := postgres
 ##########################################################################################
 
 #Recipe to build the ccontrol file of the extension
-$(BUILD_EXTENSION_CONTROL) :
+$(BUILD_EXTENSION_CONTROL) : .FORCE
 	@echo 'Building $(BUILD_EXTENSION_CONTROL)'
 	@echo "# $(EXTENSION) extension" > $@ && \
 	echo "comment = 'Side project to gather data about hn post ranking evolution'" >> $@ && \

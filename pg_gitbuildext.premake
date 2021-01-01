@@ -10,7 +10,7 @@ BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 COMMIT := $(shell git rev-parse --short HEAD)
 BUILD = $(if $(findstring $(BRANCH), main master release),$(CURRENTRELEASE),dev_$(COMMIT))
 
-.PHONY : test_backup test_deploy test_restore installcheck splash parameters
+.PHONY : test_backup test_deploy test_restore installcheck splash parameters .FORCE
 
 usage : splash
 	@echo 'Usage :'
