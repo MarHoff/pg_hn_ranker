@@ -1,7 +1,7 @@
 -- View: @extschema@.run_story_stats
 
 CREATE VIEW @extschema@.run_story_stats AS
-SELECT run.id run_id,
+SELECT run.ts_run ts_run,
     /* Broken since columns were removed from run story - Need fix!
 	format('%1$s/%2$s',count(*) FILTER (WHERE run_story.topstories_rank IS NOT NULL), COALESCE(array_length(run.topstories,1)::text,'error')) AS topstories,
 	format('%1$s/%2$s',count(*) FILTER (WHERE run_story.beststories_rank IS NOT NULL), COALESCE(array_length(run.beststories,1)::text,'error')) AS beststories,
@@ -25,7 +25,7 @@ SELECT run.id run_id,
 	ts_run,
 	max(ts_payload)-min(ts_run) as fetch_duration
 FROM @extschema@.run
-LEFT JOIN @extschema@.run_story ON run.id=run_story.run_id
-LEFT JOIN @extschema@.error ON run_story.run_id=error.run_id AND error.object='run_story' AND run_story.story_id=error.object_id::bigint
-GROUP BY run.id
-ORDER BY run.id desc;
+LEFT JOIN @extschema@.run_story ON run.ts_run=run_story.ts_run
+LEFT JOIN @extschema@.error ON run_story.ts_run=error.ts_run AND error.object='run_story' AND run_story.story_id=error.object_id::bigint
+GROUP BY run.ts_run
+ORDER BY run.ts_run desc;

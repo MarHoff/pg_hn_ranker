@@ -13,11 +13,10 @@ test_deploy :
 	sudo $(MAKE) install
 	sudo -u $(TESTUSER) psql -c "DROP DATABASE IF EXISTS $(TESTDATABASE);"
 	sudo -u $(TESTUSER) psql -c "CREATE DATABASE $(TESTDATABASE);"
-	sudo -u $(TESTUSER) psql -d $(TESTDATABASE) -c "CREATE EXTENSION $(EXTENSION) VERSION '$(BUILD)' CASCADE;"
+	sudo -u $(TESTUSER) psql -d $(TESTDATABASE) -c "BEGIN;SELECT set_config('log_min_messages', 'DEBUG5', true);SELECT set_config('log_statement','all',true);SELECT set_config('log_error_verbosity', 'VERBOSE', true); CREATE EXTENSION $(EXTENSION) VERSION '$(BUILD)' CASCADE;COMMIT;"
 
 test_restore : test_deploy
 	sudo -u $(TESTUSER) pg_restore -a -d $(TESTDATABASE) pg_hn_ranker.bak
-	sudo -u $(TESTUSER) psql -d $(TESTDATABASE) -c "SELECT setval('$(EXTENSION_SCHEMA).run_id_seq', (SELECT max(id) FROM $(EXTENSION_SCHEMA).run), true);"
 
 installcheck: test_deploy
 	sudo -u $(TESTUSER) psql -d $(TESTDATABASE) -c "CREATE EXTENSION IF NOT EXISTS pgtap;"

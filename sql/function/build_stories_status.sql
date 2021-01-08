@@ -2,9 +2,9 @@
 
 -- DROP FUNCTION hn_ranker.build_stories_status(text);
 
-CREATE OR REPLACE FUNCTION hn_ranker.build_stories_status(v_run_id bigint DEFAULT NULL )
+CREATE OR REPLACE FUNCTION hn_ranker.build_stories_status(v_ts_run timestamptz DEFAULT NULL )
 RETURNS TABLE (
-  run_id bigint,
+  ts_run timestamptz,
   story_id bigint,
   topstories_rank integer,
   beststories_rank integer,
@@ -23,22 +23,22 @@ RETURN QUERY
 WITH
 sel_run_story AS (
   SELECT
-    run_story.run_id,
+    run_story.ts_run,
     run_story.story_id,
     run_story.status,
     run_story.score,
-    max(run_story.run_id) OVER (
+    max(run_story.ts_run) OVER (
       PARTITION BY run_story.story_id
-      ) max_run_id,
+      ) max_ts_run,
     row_number() OVER (
       PARTITION BY run_story.story_id,run_story.status
-      ORDER BY run_story.story_id,run_story.run_id,run_story.status
+      ORDER BY run_story.story_id,run_story.ts_run,run_story.status
       ) status_repeat
   FROM hn_ranker.run_story
-  WHERE v_run_id IS NULL OR run_story.run_id <= v_run_id
+  WHERE v_ts_run IS NULL OR run_story.ts_run <= v_ts_run
 )
 SELECT
-    sel_run_story.run_id,
+    sel_run_story.ts_run,
     sel_run_story.story_id,
     array_position(run.topstories, sel_run_story.story_id) topstories_rank,
     array_position(run.beststories, sel_run_story.story_id) beststories_rank,
@@ -49,8 +49,8 @@ SELECT
     run.ts_run ts_run,
     sel_run_story.status_repeat::integer status_repeat
   FROM sel_run_story
-    JOIN hn_ranker.run ON sel_run_story.run_id=run.id
-  WHERE sel_run_story.run_id=max_run_id;
+    JOIN hn_ranker.run ON sel_run_story.ts_run=run.ts_run
+  WHERE sel_run_story.ts_run=max_ts_run;
 END;
 $BODY$;
 

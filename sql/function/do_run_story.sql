@@ -15,11 +15,11 @@ SELECT val INTO STRICT param FROM hn_ranker.rule WHERE ruleset_id=hnr_ruleset;
 RAISE NOTICE 'param: %', param;
 
 WITH
-  classify_fetch_now AS (SELECT * FROM  hn_ranker.build_stories_classify(currval('hn_ranker.run_id_seq'::regclass), hnr_ruleset) WHERE fetch_now),
+  classify_fetch_now AS (SELECT * FROM  hn_ranker.build_stories_classify(now()::timestamptz, hnr_ruleset) WHERE fetch_now),
   get_items AS (SELECT * FROM hn_ranker.wget_items((SELECT array_agg(story_id) FROM classify_fetch_now))),
   insert_run_story AS (
     INSERT INTO hn_ranker.run_story(
-      run_id,
+      ts_run,
       story_id,
       status,
       score,
@@ -27,7 +27,7 @@ WITH
       ts_payload
       )
     SELECT 
-    classify_fetch_now.run_id,
+    classify_fetch_now.ts_run,
     classify_fetch_now.story_id,
     CASE
       WHEN (get_items.payload ->> 'deleted') = 'true' THEN 'deleted'
@@ -46,9 +46,9 @@ WITH
     ON classify_fetch_now.story_id=get_items.id
     RETURNING *
     )
-INSERT INTO hn_ranker.error(run_id, object, object_id, report)
+INSERT INTO hn_ranker.error(ts_run, object, object_id, report)
 SELECT
-run_id, 'run_story' as object, story_id::text object_id, row_to_json(get_items)::jsonb
+ts_run, 'run_story' as object, story_id::text object_id, row_to_json(get_items)::jsonb
 FROM insert_run_story LEFT JOIN get_items ON story_id=get_items.id
 WHERE insert_run_story.status >= 'deleted' OR NOT(get_items.retries = 0);
 END;

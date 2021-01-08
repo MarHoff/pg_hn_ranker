@@ -2,9 +2,8 @@
 
 -- DROP FUNCTION hn_ranker.build_stories_classify(text);
 
-CREATE OR REPLACE FUNCTION hn_ranker.build_stories_classify( v_run_id bigint DEFAULT NULL, hnr_ruleset text DEFAULT 'production'::text )
+CREATE OR REPLACE FUNCTION hn_ranker.build_stories_classify( v_ts_run timestamptz DEFAULT NULL, hnr_ruleset text DEFAULT 'production'::text )
 RETURNS TABLE (
-  run_id bigint,
   ts_run timestamptz,
   story_id bigint,
   topstories_rank integer,
@@ -21,8 +20,8 @@ LANGUAGE 'plpgsql'
 
 AS $BODY$
 DECLARE
-f_run_id bigint;
 f_ts_run timestamptz;
+f_ts_lastrun timestamptz;
 rule jsonb ;
 r_new_repeat integer; 
 r_hot_repeat integer; 
@@ -67,20 +66,23 @@ IF r_frozen_age IS NULL THEN RAISE EXCEPTION 'frozen_age parameter of ruleset "%
 r_frozen_window := (rule ->> 'frozen_window')::integer;
 IF r_frozen_window IS NULL THEN RAISE EXCEPTION 'frozen_window parameter of ruleset "%" can''t be NULL!', hnr_ruleset; ELSE RAISE NOTICE 'r_frozen_window: %', r_frozen_window; END IF;
 
-IF v_run_id IS NOT NULL THEN f_run_id := v_run_id; ELSE SELECT last_value INTO STRICT f_run_id FROM hn_ranker.run_id_seq; END IF;
-RAISE NOTICE 'f_run_id: %', f_run_id;
+IF v_ts_run IS NOT NULL THEN f_ts_run := v_ts_run; ELSE SELECT max(ts_run) INTO STRICT f_ts_run FROM hn_ranker.ts_run_seq; END IF;
+RAISE NOTICE 'f_ts_run: %', f_ts_run;
 
-SELECT run.ts_run INTO STRICT f_ts_run FROM hn_ranker.run WHERE id=f_run_id;
+--Getting last run that actually returned run_story records
+SELECT ts_run INTO STRICT f_ts_last_run FROM hn_ranker.run_story
+WHERE ts_run < f_ts_run
+GROUP BY ts_run ORDER BY ts_run DESC
+LIMIT 1;
 
 RETURN QUERY
 --Looking for candidates in last recorded run_story, gathering last status and "age" (in run) of that status
 WITH
-  current AS (SELECT * FROM hn_ranker.build_stories_ranks(ARRAY[f_run_id])),
-  last AS (SELECT * FROM hn_ranker.build_stories_status(f_run_id-1)),
+  current AS (SELECT * FROM hn_ranker.build_stories_ranks(ARRAY[f_ts_run])),
+  last AS (SELECT * FROM hn_ranker.build_stories_status(f_ts_last_run)),
   classify AS (
   --Joining currents ranking vs last run and classifying candidates for fetching additional data
     SELECT
-    f_run_id run_id,
     f_ts_run ts_run,
     COALESCE(current.story_id,last.story_id) story_id,
     current.topstories_rank,
@@ -124,7 +126,6 @@ WITH
   FROM current FULL JOIN last ON current.story_id=last.story_id 
   )
 SELECT
-  classify.run_id,
   classify.ts_run,
   classify.story_id,
   classify.topstories_rank,
