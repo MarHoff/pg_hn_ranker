@@ -1,9 +1,9 @@
--- Table: @extschema@.run
+-- Table: hn_ranker.run
 
-CREATE SEQUENCE IF NOT EXISTS @extschema@.run_id_seq AS bigint;
-CREATE TABLE @extschema@.run
+CREATE SEQUENCE IF NOT EXISTS hn_ranker.run_id_seq AS bigint;
+CREATE TABLE hn_ranker.run
 (
-    id bigint NOT NULL DEFAULT nextval('@extschema@.run_id_seq'::regclass),
+    id bigint NOT NULL DEFAULT nextval('hn_ranker.run_id_seq'::regclass),
     ts_run timestamp with time zone,
     topstories bigint[],
     beststories bigint[],

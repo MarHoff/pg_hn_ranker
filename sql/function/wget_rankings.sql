@@ -1,10 +1,10 @@
 -- FUNCTION: hn_ranker.wget_rankings(extschema@.ranking[])
 
-CREATE OR REPLACE FUNCTION @extschema@.wget_rankings(
-  ranking_array @extschema@.ranking[]
+CREATE OR REPLACE FUNCTION hn_ranker.wget_rankings(
+  ranking_array hn_ranker.ranking[]
 )
 RETURNS TABLE (
-  id @extschema@.ranking,
+  id hn_ranker.ranking,
   url url,
   payload bigint[],
   ts_end timestamptz,
@@ -18,7 +18,7 @@ RETURNS TABLE (
 AS $BODY$
 
 DECLARE
-wget_ranking @extschema@.ranking[];
+wget_ranking hn_ranker.ranking[];
 wget_query text;
 BEGIN
 

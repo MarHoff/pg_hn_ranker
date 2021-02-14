@@ -1,6 +1,6 @@
--- Table: @extschema@.error
+-- Table: hn_ranker.error
 
-CREATE TABLE @extschema@.error
+CREATE TABLE hn_ranker.error
 (
     run_id bigint NOT NULL,
     object hn_ranker.object,

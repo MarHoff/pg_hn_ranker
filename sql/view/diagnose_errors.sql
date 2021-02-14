@@ -1,6 +1,6 @@
--- View: @extschema@.diagnose_errors
+-- View: hn_ranker.diagnose_errors
 
-CREATE VIEW @extschema@.diagnose_errors AS
+CREATE VIEW hn_ranker.diagnose_errors AS
 WITH run AS (SELECT max(id) FROM hn_ranker.run)
 SELECT
 e.run_id,

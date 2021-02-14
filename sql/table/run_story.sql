@@ -1,6 +1,6 @@
--- Table: @extschema@.run_story
+-- Table: hn_ranker.run_story
 
-CREATE TABLE @extschema@.run_story
+CREATE TABLE hn_ranker.run_story
 (
     run_id bigint NOT NULL,
     story_id bigint NOT NULL,

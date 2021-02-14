@@ -1,6 +1,6 @@
 -- Function: top_json(text, integer, boolean, numeric, numeric, text, text, text)
 
-CREATE OR REPLACE FUNCTION @extschema@.max_id(
+CREATE OR REPLACE FUNCTION hn_ranker.max_id(
 )
   RETURNS bigint AS
 $BODY$
