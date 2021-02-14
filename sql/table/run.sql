@@ -1,6 +1,6 @@
--- Table: @extschema@.run
+-- Table: hn_ranker.run
 
-CREATE TABLE @extschema@.run
+CREATE TABLE hn_ranker.run
 (
     ts_run timestamptz NOT NULL,
     topstories bigint[],
