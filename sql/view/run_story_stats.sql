@@ -1,7 +1,7 @@
 -- View: hn_ranker.run_story_stats
 
 CREATE VIEW hn_ranker.run_story_stats AS
-SELECT run.ts_run ts_run,
+SELECT run_story.ts_run ts_run,
     /* Broken since columns were removed from run story - Need fix!
 	format('%1$s/%2$s',count(*) FILTER (WHERE run_story.topstories_rank IS NOT NULL), COALESCE(array_length(run.topstories,1)::text,'error')) AS topstories,
 	format('%1$s/%2$s',count(*) FILTER (WHERE run_story.beststories_rank IS NOT NULL), COALESCE(array_length(run.beststories,1)::text,'error')) AS beststories,
@@ -22,10 +22,8 @@ SELECT run.ts_run ts_run,
 	count(*) FILTER (WHERE run_story.status='failed') AS failed,
 	(count(*) FILTER (WHERE (error.report ->> 'retries')::integer > 0)) AS retried_count,
 	count(*) AS total_count,
-	ts_run,
-	max(ts_payload)-min(ts_run) as fetch_duration
-FROM hn_ranker.run
-LEFT JOIN hn_ranker.run_story ON run.ts_run=run_story.ts_run
+	max(run_story.ts_payload)-min(run_story.ts_run) as fetch_duration
+FROM hn_ranker.run_story
 LEFT JOIN hn_ranker.error ON run_story.ts_run=error.ts_run AND error.object='run_story' AND run_story.story_id=error.object_id::bigint
-GROUP BY run.ts_run
-ORDER BY run.ts_run desc;
+GROUP BY run_story.ts_run
+ORDER BY run_story.ts_run desc;

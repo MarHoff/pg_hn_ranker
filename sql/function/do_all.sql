@@ -7,13 +7,7 @@ CREATE OR REPLACE PROCEDURE hn_ranker.do_all(
 LANGUAGE 'sql'
 
 AS $BODY$
-BEGIN;
 CALL hn_ranker.do_run(hnr_config);
-SAVEPOINT run_done;
 CALL hn_ranker.do_run_story(hnr_config);
-EXCEPTION
-    WHEN OTHERS THEN
-        ROLLBACK TO SAVEPOINT run_done;
-COMMIT;
 $BODY$;
 

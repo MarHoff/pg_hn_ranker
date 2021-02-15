@@ -21,7 +21,7 @@ LANGUAGE 'plpgsql'
 AS $BODY$
 DECLARE
 f_ts_run timestamptz;
-f_ts_lastrun timestamptz;
+f_ts_last_run timestamptz;
 rule jsonb ;
 r_new_repeat integer; 
 r_hot_repeat integer; 

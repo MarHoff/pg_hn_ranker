@@ -1,5 +1,5 @@
 BEGIN;
-SELECT plan(11);
+SELECT plan(10);
 
 SELECT tables_are( 'hn_ranker', ARRAY['run', 'story', 'run_story', 'error', 'ruleset', 'rule']);
 

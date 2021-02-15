@@ -11,7 +11,6 @@ RETURNS TABLE (
   newstories_rank integer,
   status hn_ranker.story_status,
   score integer,
-  ts_run timestamptz,
   status_repeat integer
 )
 LANGUAGE 'plpgsql'
@@ -46,7 +45,6 @@ SELECT
     sel_run_story.status status,
     sel_run_story.score score,
     --payload,
-    run.ts_run ts_run,
     sel_run_story.status_repeat::integer status_repeat
   FROM sel_run_story
     JOIN hn_ranker.run ON sel_run_story.ts_run=run.ts_run
