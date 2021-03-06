@@ -66,13 +66,13 @@ IF r_frozen_age IS NULL THEN RAISE EXCEPTION 'frozen_age parameter of ruleset "%
 r_frozen_window := (rule ->> 'frozen_window')::integer;
 IF r_frozen_window IS NULL THEN RAISE EXCEPTION 'frozen_window parameter of ruleset "%" can''t be NULL!', hnr_ruleset; ELSE RAISE NOTICE 'r_frozen_window: %', r_frozen_window; END IF;
 
-IF v_ts_run IS NOT NULL THEN f_ts_run := v_ts_run; ELSE SELECT max(ts_run) INTO STRICT f_ts_run FROM hn_ranker.ts_run_seq; END IF;
+IF v_ts_run IS NOT NULL THEN f_ts_run := v_ts_run; ELSE SELECT max(run.ts_run) INTO STRICT f_ts_run FROM hn_ranker.run; END IF;
 RAISE NOTICE 'f_ts_run: %', f_ts_run;
 
 --Getting last run that actually returned run_story records
-SELECT ts_run INTO STRICT f_ts_last_run FROM hn_ranker.run_story
-WHERE ts_run < f_ts_run
-GROUP BY ts_run ORDER BY ts_run DESC
+SELECT run_story.ts_run INTO f_ts_last_run FROM hn_ranker.run_story
+WHERE run_story.ts_run < f_ts_run
+GROUP BY run_story.ts_run ORDER BY ts_run DESC
 LIMIT 1;
 
 RETURN QUERY
