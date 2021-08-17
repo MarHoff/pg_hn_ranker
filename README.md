@@ -3,7 +3,7 @@
 ***This side project is published for pedagogical and/or inspirational purposes. You should not run this into production!***
 *While the code is in english, the remaining of the readme is currently available only in french.*
 
-***Ce side-project est publié à des fin pédagogique et/ou pour servir d'inspiration, il n'est pas adapté à l'usage en production!***
+***Ce projet personnel est publié à des fins pédagogiques et/ou pour servir d'inspiration, il n'est pas adapté à l'usage en production!***
 *Le code utilise majoritairement l'anglais, mais la suite du readme est pour l'instant disponible uniquement en français.*
 
 ## Utilisation
@@ -14,7 +14,7 @@ Le principe de ce site est de hiérarchiser l'information de manière automatis�
 Ce projet vise à accumuler de manière structurée et adaptative des données permettant d'analyser les dynamiques d'interactions (upvote/flags/nombre de commentaires) autour de chaque publication de news sur ce site.<br>
 Le but annexe de cette démarche étant de constituer une masse de données conséquente permettant de mettre en application et de tester différents logiciels de data-visualisation OpenSource.
 
-Le choix du site a été motivé par sa popularité de niche et une volumétrie raisonnable pour une démarche de side-project.
+Le choix du site a été motivé par sa popularité de niche et une volumétrie raisonnable pour une démarche de projet personnel.
 Une API publique sans restriction d'usage est disponible et [documentée](https://github.com/HackerNews/API) ce qui est également idéal pour cet exercice.
 En outre la communauté du site par sa démographie est depuis longtemps intéressée par [des réflexions sur le fonctionnement du site](https://news.ycombinator.com/item?id=1781013).
 
@@ -28,15 +28,15 @@ Au moment de la rédaction la version actuellement déployée à effectué 104 1
 
 Le projet est packagé sous forme d'une extension PostgreSQL contenant la structure des table et les fonctions permettant de collecter les données depuis l'API de Hacker News.
 La partie du code en charge des appels HTTP a été forkée dans une extension séparée en raison de son intérêt propre. Cette extension [pg_pmwget](https://github.com/MarHoff/pg_pmwget) constitue donc une dépendance obligatoire de l’installation.
-Les objets de l'extension sont installés dans le schéma spécifique "hn_ranker", les tables contenant les résultats sont marqué comme des *pg_extension_config_dump* de manière à être sauvegardées lors de l'utilisation de *pg_dump*.
+Les objets de l'extension sont installés dans le schéma spécifique "hn_ranker", les tables contenant les résultats sont marquées comme des *pg_extension_config_dump* de manière à être sauvegardées lors de l'utilisation de *pg_dump*.
 
-Le cycle de collecte est piloté par l'appel à la procédure **hn_ranker.do_all()** qui dans le cas du serveur de production est appelé toute les 5 minutes par l'utilitaire cron. La procédure ne sert en réalité qu'a contrôler l'appel aux sous-procédures en charge des deux étapes qui constituent chaque cycle.
+Le cycle de collecte est piloté par l'appel à la procédure **hn_ranker.do_all()** qui dans le cas du serveur de production est appelée toutes les 5 minutes par l'utilitaire cron. La procédure ne sert en réalité qu'à contrôler l'appel aux sous-procédures en charge des deux étapes qui constituent chaque cycle.
 
 ### Etape 1 - Récupération des classements d'articles
 ```sql
 CALL hn_ranker.do_run();
 ```
-L'API est sollicitée pour récupérer les trois classements disponibles sur Hacker news:
+L'API est sollicitée pour récupérer les trois classements disponibles sur Hacker News:
 - Articles à l'affiche (topstories) https://news.ycombinator.com/news
 - Meilleurs articles (beststories) https://news.ycombinator.com/newest
 - Nouveaux articles (newstories) https://news.ycombinator.com/best
@@ -57,7 +57,7 @@ Structure de la table **hn_ranker.run**:
 ```sql
 CALL hn_ranker.do_run_story():
 ```
-A partir des classements récupérés et d'un ensemble de statistiques issus des collectes précédentes un algorithme classifie l'ensemble des articles et détermine lesquels seront collectés pour récupérer des point de données spécifiques. Les résultats sont stockés dans la table **run_story** avec une réference à l'identifiant de session **run_id**.
+A partir des classements récupérés et d'un ensemble de statistiques issues des collectes précédentes un algorithme classifie et détermine quels seront les articles collectés pour récupérer des attributs complémentaires (score et nombre de commentaires). Les résultats sont stockés dans la table **run_story** avec une réference à l'identifiant de session **run_id**.
 
 Structure\* de la table **hn_ranker.run_story**:
 |Nom|Description|Exemple pour l'article [28172269](https://news.ycombinator.com/item?id=28172269)<br>(le 15/08/2021 à 16h10 UTC)|
@@ -72,11 +72,38 @@ Structure\* de la table **hn_ranker.run_story**:
 
 *\*NB: Des champs supplémentaires dépréciés peuvent être présent dans la structure de la table réelle sur la branche master*
 
+## Exemple d'exploitation graphique
+
+|Article 27370026 ([source](https://news.ycombinator.com/item?id=27370026))|Article 28145247 ([source](https://news.ycombinator.com/item?id=28145247))|
+|-|-|
+|Stack Overflow sold to Prosus for $1.8B (wsj.com)|1Password 8 will be subscription only and won’t support local vaults (1password.community)|
+|![Score Commentaires 27370026](media/27370026_score_com.png)|![Score Commentaires 28145247](media/28145247_score_com.png)|
+|![Rangs 27370026](media/27370026_ranks.png)|![Rangs 28145247](media/28145247_ranks.png)|
+|Données [27370026.csv](media/27370026.csv)|Données [28145247.csv](media/28145247.csv)|
+
+```sql
+--Requête sql utilisée pour générer les graphiques
+SELECT
+  to_char(run.ts_run,'YYYY-MM-DD HH24:MI:SS') ts_run,
+  run_story.run_id,
+  run_story.story_id,
+  array_position(run.topstories, run_story.story_id) topstories_rank,
+  array_position(run.beststories, run_story.story_id) beststories_rank,
+  array_position(run.newstories, run_story.story_id) newstories_rank,
+  run_story.status status,
+  run_story.score score,
+  run_story.descendants descendants
+FROM hn_ranker.run_story
+  JOIN hn_ranker.run ON run_story.run_id=run.id
+WHERE story_id='27370026'
+ORDER by ts_run;
+```
+
 ### Précisions sur l'algorithme de classification des articles
 
-Les première minutes et heures suivant une publication sont cruciales dans l'analyse des dynamiques d'interaction qui sont nombreuses et déterminent directement si un article arrivera à maintenir un score lui permettant de rester à l'affiche pendant une longue période. A l'inverse les vieilles articles évoluent très peu voir plus du tout.
+Les première minutes et heures suivant une publication sont cruciales dans l'analyse des dynamiques d'interactions qui déterminent directement si un article arrivera à maintenir un score lui permettant de rester à l'affiche pendant une longue période. A l'inverse les vieux articles évoluent très peu voir plus du tout.
 
-L'algorithme constitue pour chaque cycle une liste de l'ensemble des articles en base (ou nouvellement soumises) et calcul leur statut en fonction de jeux de règles paramétrables. C'est le statut actuelle,le nombre de collecte précédentes dans le statut actuel et la date de dernière collecte de chaque articles qui déterminera si elle sera collecte à l'occasion du cycle de collecte courant.
+L'algorithme constitue pour chaque cycle une liste de l'ensemble des articles en base (ou nouvellement soumises) et calcul leur statuts en fonction de jeux de règles paramétrables. C'est le statut actuel,le nombre de collecte précédentes dans le statut actuel et la date de dernière collecte de chaque article qui déterminera s'il sera collecté à l'occasion du cycle courant.
 
 #### Statuts et conditions de collecte avec le réglage *production*
 | Statuts possibles par ordre décroissant| Condition pour le statut | Règle de la collecte |
@@ -95,19 +122,28 @@ L'algorithme constitue pour chaque cycle une liste de l'ensemble des articles en
 
 ### Paramétrage
 
-Il est possible de configurer finement les règles relatives à l’algorithme de sélection des article en éditant les jeux de réglages dans les tables **rule** et **ruleset**. Le comportement par défaut si les fonctions sont appelés sans paramètre est de suivre le jeu de règle "production". Dans un contexte de debug il peut être utile par exemple d'utiliser un jeu de règle différent pour permettre une rotation plus rapide du statut de chaque publication.
+Il est possible de configurer finement ces paramètres en éditant les jeux de réglages dans les tables **rule** et **ruleset**. Le comportement par défaut si les fonctions sont appelés sans paramètre est de suivre le jeu de règle "production". Dans un contexte de debug il peut être utile par exemple d'utiliser un jeu de règle différent pour permettre une rotation plus rapide du statut de chaque publication.
 
 ## Pourquoi ne pas utiliser cela en production?
 
+Ce projet répond à une problématique d'étude spécifique et nécessiterait plusieurs améliorations avant d'être considéré comme stable. La branche develop explore d'ailleurs la possibilité de basculer d'un identifiant de cycle du type *bigint* vers *timestamp* tant l'utilisation d'un identifiant unique non-naturel à pu être problématique dans le cadre de la gestion d'incidents impliquant un reset du nombre de cycle.
+
 Pendant longtemps ce projet est d'ailleurs resté privé/masqué parce que je ne le trouvait pas assez abouti pour être présenté.
-Mais en réalité il est sans doute toujours plus intéressant de partager ses projets inaboutis car le chemin est tout aussi intéressant que le résultat.
+Mais en réalité il est sans doute toujours plus intéressant de partager ses projets inachevés car le chemin souvent tout aussi intéressant que le résultat.
+
+En outre attendu qu'un VPS fait tourner l'application avec un recul d'environ 2 ans il serait sans doute contre-productif de démarrer une nouvelle instance sans concertation. N’hésitez pas à me contactez au préalable pour en discuter si le projet vous intéresse : contact <at> marhoff <point> xyz
 
 ## Installation
+
+### Note sur le système de build
+Ce projet personnel m'a conduit à tester le fonctionnement de Make et à mettre au point un systeme de build basé sur celui-ci.
+La branche develop est beaucoup plus aboutie dans ce sens et il est préférable d'ausculter le code dans celle-ci pour s'en faire une idée.
+Cela reste évidement de l'ordre du bricolage dans le cadre d'un projet personnel et l'essentiel de la procédure reste gérée par [PGXS](https://www.postgresql.org/docs/current/extend-pgxs.html) que mes scripts ne font qu'étendre.
 
 ### Prérequis : paquets recommandés pour faire tourner la suite de test
 
 (testé sous Debian et PostgreSQL 12)
-```
+```sh
 postgresql-12
 postgresql-contrib-12
 postgresql-server-dev-12
@@ -120,13 +156,27 @@ git-gui
 git-doc
 build-essential
 parallel
+```
 
-### Installation comme extension de PostgreSQL
+### Installation de pg_pmwget comme prérequis
 ```sh
 git clone https://github.com/MarHoff/pg_pmwget.git
 cd pg_pmwget
 make build #Optionnel pour installer la version stable
 make install
-make test #Tente de faire tourner des test basiques avec pgtap
+```
 
+### Installation comme extension de PostgreSQL
+```sh
+git clone https://github.com/MarHoff/pg_hn_ranker.git
+cd pg_hn_ranker
+make build #Optionnel pour installer la version stable
+make install
+#Une suite de test embryonnaire est présente mais il recommander de travailler plutôt sur la branche develop. Executer la commande make sans argument permettra d'afficher les optionns disponibles.
+
+```
+
+### Activation de l'extension dans PostgreSQL
+```sql
+CREATE EXTENSION pg_hn_ranker CASCADE;
 ```
