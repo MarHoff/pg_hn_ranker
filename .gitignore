@@ -1,3 +1,4 @@
 releases/pg_hn_ranker--*dev*.sql
 *.bak
 *.sublime*
+*.ods
