@@ -44,9 +44,11 @@ $(BUILD_MAIN_SCRIPT) : $(DOMAIN) $(TABLE) $(FUNCTION) $(VIEW)
 
 #Recipe to build upgrade script from last release to current release
 #Keep recipe empty if not needed
-$(BUILD_UPDATE_SCRIPT) :
+$(BUILD_UPDATE_SCRIPT) : $(BUILD_MAIN_SCRIPT)
 	@echo 'Building $(BUILD_UPDATE_SCRIPT)'
-	@echo 'No upgrade script defined yet!'
+	@cat $(PREUPDATE) > $@ && \
+	cat $(BUILD_MAIN_SCRIPT) >> $@ && \
+	cat $(POSTUPDATE) >> $@
 
 
 ##########################################################################################
@@ -65,6 +67,12 @@ FUNCTION := $(addprefix sql/function/, $(addsuffix .sql, $(FUNCTION)))
 
 VIEW := run_story_stats diagnose_errors
 VIEW := $(addprefix sql/view/, $(addsuffix .sql, $(VIEW)))
+
+PREUPDATE := temp_create old_drop
+PREUPDATE := $(addprefix sql/update_scripts/, $(addsuffix .sql, $(PREUPDATE)))
+
+POSTUPDATE := temp_migrate temp_drop
+POSTUPDATE := $(addprefix sql/update_scripts/, $(addsuffix .sql, $(POSTUPDATE)))
 
 
 #This line include post-script that perform the actual build & deployement + link PGXS
