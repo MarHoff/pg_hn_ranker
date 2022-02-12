@@ -4,7 +4,7 @@
 
 SHELL = /bin/sh
 DATA = $(wildcard releases/*.sql)
-EXTRA_CLEAN = $(wildcard releases/*dev*.sql) $(TESTDATABASE).bak
+EXTRA_CLEAN = $(wildcard releases/*) $(TESTDATABASE).bak
 TESTS = $(wildcard test/sql/*.sql)
 BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 COMMIT := $(shell git rev-parse --short HEAD)
