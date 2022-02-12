@@ -1,0 +1,2 @@
+WITH param AS (SELECT max(id) maxid, max(ts_run) maxtsrun FROM hn_ranker.run WHERE ts_run < '2020-03-27 10:50')
+SELECT count(*) nb_run, max(id) max_id, max(id)-count(*) missing_run, max(ts_run) FROM hn_ranker.run, param WHERE id<=maxid
