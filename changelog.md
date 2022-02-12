@@ -1,24 +1,33 @@
-#Changelog
+# Changelog
 
-##Version 0.1.5 (next)
+## Version 0.1.6 (next)
 - TODO Add a target for and Postgresql Extension upgrade script between previous release and current build
 - TODO use rulsets in pg_pmwget wrappers
-- TODO Implements garbage collector
+- TODO Implement a garbage collector : Once a story reach frozen state it should be possible to reclaim storage space by replacing
+- TODO Investigate opportunity to introduce submodules for pm_wget and pg_gitbuildext
+
+
+## Version 0.1.5
+- Switching to a timestamp based natural primary key to identify each run instead of a run_id (PK serial)
+  This should dramatically help merging dataset when if needed because you don't have to care about run_id (PK) collision anymore.
 
 - Refactoring the build system which is now called pg_gitbuildext
   The main extension logic is now moved back to the main Makefile
   The framework logic is splitted into two files "pg_gitbuildext.premake" and "pg_gitbuildext.postmake" which are included from the main Makefile.
-  Until it will break it'll gracefully handle git branch logic for naming target:
-    - When in branch main/master/release the build target will reflect the current_realease variable of the main Makefile
+  Until it should gracefully handle git branch logic for naming target:
+    - When in branch main/master/release the build target will reflect the "current_realease" variable of the main Makefile
       It is recomended to bump version as soon as you start a new dev cycle, that way a bare CREATE EXTENSION (without version) instruction from a dev branch will fail.
-    - When in any otherly named branch the build target will correpond to the current git hash of the branch
-  When testing recipes are invoked (test_deploy/testbackup/test_restore/installcheck) they will automatically pick the extension version correponding to current hash
+    - When in any otherly named branch the build target will correpond to the current short git hash of the branch HEAD prefixed wit dev (eg : dev_2c01fff )
+      If testing recipes are invoked (test_deploy/testbackup/test_restore/installcheck) they will automatically pick the extension version correponding to current hash
 
-- Fixing test_backup and test_restore recipes to use pg_dump custom format instead of plain SQL
+- Extension is now non-relocatable and use fixed shema name
+- When using "test_deploy" command if extension creation fail it'll run again as an unpackaged script to provide more usefull error messages
+- Updating test_backup and test_restore recipes to use pg_dump custom format instead of plain SQL
+- Adding a dummy upgrade path from 'dev_2c01fff' version number to the clean '0.1.5' release wich is codewise equivalent
+- Various minors enhancement of buildsystem and tests
 
-##Version 0.1.4
 
-
+## Version 0.1.4
 - Altering schema to avoid redundancy between run and run_story rankings storage
   Dropping theses columns on table run_story : topstories_rank, beststories_rank, newstories_rank, success
 
@@ -49,20 +58,20 @@
   It expect that an application is deployed on a database called 'develop' (typically using make do_reinstall)
 
 
-###Version 0.1.3
+### Version 0.1.3
 - Tuning retries parameters for rankings wrapper
 - Adding a proper diagnose_error view
 - Removing foreign key for dump/restore performance as we don't handle constraints exception anyway for now
 
-###Version 0.1.2
+### Version 0.1.2
 - Handling case when API return missing or deleted stories
 - Improving stats view
 
-###Version 0.1.1
+### Version 0.1.1
 - Hot fix for a parameter
 
 
-##Version 0.1 
+## Version 0.1 
 - First deployable realease 
 
 
