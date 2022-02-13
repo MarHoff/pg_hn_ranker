@@ -11,7 +11,7 @@ This site rank submissions in an automated way bby relying mostly on social inte
 This project goal is to accumulate data in a structured and adaptive way to analyze the dynamics of interactions (upvote/flags/number of comments) around each publication on this site.<br>
 A secondary goal of this project is to build up a pretty large dataset to implement and test various OpenSource data-visualization software.
 
-Choice of this website was motivated by its niche popularity and reasonable volumetry for a side project.
+Choice of this website was motivated by its niche popularity and reasonable volumetric for a side project.
 A public API without usage restriction is available and [documented](https://github.com/HackerNews/API) which is also ideal for this exercise.
 In addition, the site community by its demography has long been interested in [reflections on the operation of the site](https://news.ycombinator.com/item?Id=1781013).
 
@@ -29,7 +29,7 @@ The extension objects are installed in the specific schema "hn_ranker", the tabl
 
 Collection cycle is driven by the call to the procedure **hn_ranker.do_all()** which in the case of the production server is called every 5 minutes by the cron utility. The procedure is actually only used to control the call to sub-procedures in charge of the two steps of each cycle.
 
-### Step 1 - Recovery of global rankings
+### Step 1 - Collecting global rankings
 ```sql
 CALL hn_ranker.do_run();
 ```
@@ -50,11 +50,11 @@ Table schema **hn_ranker.run**:
 |newstories  | Unique ID of new stories (array)|{28189890,28189836,28189813,28189799,...}| 
 |ts_end      | Timestamp at the end of the run| 2021-08-15 16:10:01.496679+00| 
 
-### Etape 2 - Récupération des infos individuelles pour les articles sélectionnés<br>
+### Etape 2 - Collecting targeted individual stories<br>
 ```sql
 CALL hn_ranker.do_run_story():
 ```
-A partir des classements récupérés et d'un ensemble de statistiques issues des collectes précédentes un algorithme classifie et détermine quels seront les articles collectés pour récupérer des attributs complémentaires (score et nombre de commentaires). Les résultats sont stockés dans la table **run_story** avec une réference à l'identifiant de session **run_id**.
+Using the previous rankings and statistics from previous collections, an algorithm classifies and determines which items will be collected to retrieve additional attributes (score and number of comments). The results are stored in the **run_story** table with a reference to the session ID **run_id**.
 
 Table schema\* **hn_ranker.run_story**:
 |Name|Description|Example for submission [28172269](https://news.ycombinator.com/item?id=28172269)<br>(2021-08-15 at 16:10 UTC)|
@@ -120,9 +120,9 @@ The algorithm compute for each cycle a list of all the submissions already in da
 
 It is possible to fine-tune these parameters by editing settings in the **rule** and **ruleset** tables. The default behavior when functions are called without parameters is to follow the "production" ruleset. In a debug context it may be useful, for example, to use a different ruleset to allow faster rotation of the status of each publication.
 
-## Why should'nt you use this in production?
+## Why shouldn't you use this in production?
 
-This project was develloped as a side project and would require several improvements before being considered stable. The **develop** branch is also exploring the possibility of switching from a *"bigint"* run unique ID to a *"timestamp"* ID as the use of an non-natural unique identifier may have been problematic in the management of incidents involving a reset of the run ID.
+This project was developed as a side project and would require several improvements before being considered stable. The **develop** branch is also exploring the possibility of switching from a *"bigint"* run unique ID to a *"timestamp"* ID as the use of an non-natural unique identifier may have been problematic in the management of incidents involving a reset of the run ID.
 
 For a long time, this project remained private/masked because I didn't deemed it polished enough to be presented.
 But in reality it is probably always more interesting to share even  unfinished projects because the path is often as interesting as the result.
@@ -134,7 +134,7 @@ In addition, since a VPS I own run the application with a historical dataset of 
 ### Note on the build system
 This side project led me to test how **Make** works and develop a build system based on it.
 The develop branch is much more advanced in this sense and is a better starting point to explore the codebase.
-This effort probably classify as an ugly personnal script to extend [PGXS](https://www.postgresql.org/docs/current/extend-pgxs.html).
+This effort probably classify as an ugly personal script to extend [PGXS](https://www.postgresql.org/docs/current/extend-pgxs.html).
 
 ### Prerequisites: recommended packages to run the test suite
 
@@ -175,3 +175,8 @@ make install
 ```sql
 CREATE EXTENSION pg_hn_ranker CASCADE;
 ```
+
+### Note about PostgreSQL configuration tuning
+
+While in most case it's recommended to fine tune *log_temp_files*, *log_min_duration_statement* and *track_activity_query_size* to learn about resources heavy query they should probably be kept them disabled altogether (usually the default setting) if you want to run pg_hn_ranker as intended.
+The typical setup would be to call the hn_ranker.do_all() at regular intervals (typically every 5 minutes) an each call will probably trigger logging of the query. When theses parameters are ill defined it could lead to uses as much storage for pretty useless logging than for the actual data.

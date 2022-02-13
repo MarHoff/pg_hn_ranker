@@ -133,7 +133,7 @@ En outre attendu qu'un VPS fait tourner l'application avec un recul d'environ 2 
 ## Installation
 
 ### Note sur le système de build
-Ce projet personnel m'a conduit à tester le fonctionnement de Make et à mettre au point un systeme de build basé sur celui-ci.
+Ce projet personnel m'a conduit à tester le fonctionnement de Make et à mettre au point un système de build basé sur celui-ci.
 La branche develop est beaucoup plus aboutie dans ce sens et il est préférable d'ausculter le code dans celle-ci pour s'en faire une idée.
 Cela reste évidement de l'ordre du bricolage dans le cadre d'un projet personnel et l'essentiel de la procédure reste gérée par [PGXS](https://www.postgresql.org/docs/current/extend-pgxs.html) que mes scripts ne font qu'étendre.
 
@@ -169,7 +169,7 @@ git clone https://github.com/MarHoff/pg_hn_ranker.git
 cd pg_hn_ranker
 make build #Optionnel pour installer la version stable
 make install
-#Une suite de test embryonnaire est présente mais il recommander de travailler plutôt sur la branche develop. Executer la commande make sans argument permettra d'afficher les optionns disponibles.
+#Une suite de test embryonnaire est présente mais il recommander de travailler plutôt sur la branche develop. Exécuter la commande make sans argument permettra d'afficher les optionns disponibles.
 
 ```
 
@@ -177,3 +177,8 @@ make install
 ```sql
 CREATE EXTENSION pg_hn_ranker CASCADE;
 ```
+
+### Note sur les choix de configuration de PostgreSQL
+
+Dans la plupart des cas, il est recommandé d'affiner les paramètres *log_temp_files*, *log_min_duration_statement* et *track_activity_query_size* pour en savoir plus sur les requêtes consommatrices de ressources, il conviendra de les garder désactivés (généralement le paramètre par défaut) pour une utilisation typique de pg_hn_ranker.
+La configuration typique consiste en un appel à la fonction hn_ranker.do_all() à intervalles réguliers (généralement toutes les 5 minutes) et chaque appel déclenchera probablement la journalisation de la requête. Lorsque ces paramètres sont mal définis, cela pourrait conduire à utiliser autant de stockage pour une journalisation relativement inutile que pour les données réelles.
