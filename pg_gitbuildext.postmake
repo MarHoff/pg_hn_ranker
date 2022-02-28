@@ -2,7 +2,7 @@
 #Dont edit this file directly edit the Makefile instead
 #Copyright Martin Hoffmann 2019-2020 - Version 0.3
 
-build : splash parameters $(BUILD_EXTENSION_CONTROL) $(BUILD_MAIN_SCRIPT) $(BUILD_UPDATE_SCRIPT)
+build : splash $(BUILD_EXTENSION_CONTROL) $(BUILD_MAIN_SCRIPT) $(BUILD_UPDATE_SCRIPT)
 
 
 test_backup :
@@ -28,8 +28,6 @@ splash :
 	@echo 'Build system for PostgreSQL extension $(EXTENSION) '
 	@echo 'Powered by pg_gitbuildext building framework Version 0.3'
 	@echo '****************************************************'
-
-parameters: splash
 	@echo 'Commit $(COMMIT) on branch $(BRANCH)'
 	@echo '****************************************************'
 	@echo '              EXTENSION : $(EXTENSION)'

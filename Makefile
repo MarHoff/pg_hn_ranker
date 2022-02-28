@@ -12,8 +12,8 @@ EXTENSION := pg_hn_ranker
 EXTENSION_SCHEMA := hn_ranker
 
 #Versioning management
-LASTRELEASE    := 0.1.4
-CURRENTRELEASE := 0.1.5
+LASTRELEASE    := 0.1.5
+CURRENTRELEASE := 0.1.6
 
 #Parameters for deploying test database
 TESTDATABASE := pg_hn_ranker_test
@@ -62,7 +62,7 @@ DOMAIN := $(addprefix sql/domain/, $(addsuffix .sql, $(DOMAIN)))
 TABLE := run story run_story error ruleset rule config_dump
 TABLE := $(addprefix sql/table/, $(addsuffix .sql, $(TABLE)))
 
-FUNCTION := check_time_window max_id wget_rankings wget_items build_stories_ranks build_stories_status build_stories_classify do_run do_run_story do_all
+FUNCTION := check_time_window wget_rankings wget_items build_stories_ranks build_stories_status build_stories_classify do_run do_run_story do_all
 FUNCTION := $(addprefix sql/function/, $(addsuffix .sql, $(FUNCTION)))
 
 VIEW := run_story_stats diagnose_errors
