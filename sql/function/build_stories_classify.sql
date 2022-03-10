@@ -109,7 +109,7 @@ IF r_frozen_window IS NULL
 END IF;
 
 IF v_ts_run IS NOT NULL THEN f_ts_run := v_ts_run;
-  ELSE SELECT max(ts_run) INTO STRICT f_ts_run FROM hn_ranker.ts_run_seq;
+  ELSE SELECT max(run.ts_run) INTO STRICT f_ts_run FROM hn_ranker.run;
 END IF;
 RAISE NOTICE 'f_ts_run: %', f_ts_run;
 
