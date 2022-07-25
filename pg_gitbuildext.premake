@@ -5,7 +5,7 @@
 SHELL = /bin/sh
 DATA = $(wildcard releases/*.sql)
 EXTRA_CLEAN = $(wildcard releases/*) $(TESTDATABASE).bak
-TESTS = $(wildcard test/sql/*.sql)
+TESTS = $(sort $(wildcard test/sql/*.sql))
 BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 COMMIT := $(shell git rev-parse --short HEAD)
 BUILD = $(if $(findstring $(BRANCH), main master release),$(CURRENTRELEASE),dev_$(COMMIT))

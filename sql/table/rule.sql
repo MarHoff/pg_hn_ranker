@@ -9,8 +9,8 @@ CREATE TABLE rule (
     CONSTRAINT rule_pkey PRIMARY KEY (ruleset_id, rule),
     CONSTRAINT rule_ruleset_id_fkey FOREIGN KEY (ruleset_id)
         REFERENCES ruleset (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 );
 
 
@@ -31,7 +31,7 @@ $${
 "frozen_window":0
 }$$::jsonb),
 
-('production', 'run_story_param', 'jsonb',
+('production_default', 'run_story_param', 'jsonb',
 $${
 "new_repeat":12,
 "hot_repeat":6,

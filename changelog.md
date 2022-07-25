@@ -1,6 +1,13 @@
 # Changelog
 
 ## Version 0.1.6 (next)
+- Schema change! Adding extversion and ruleset_id to the run table to help merging data from distinct instances
+
+- As timestamp is now the id building a more robust way to propagate ts_run from do_run() to do_run_story()
+  It is now explicit while past behavior relied on the now() function returning same value inside a transaction.
+
+- Rework tests to be sorted by name and adjust to schema changes + don't drop database after tests for debug (still dropped before)
+
 - TODO Add a target for and Postgresql Extension upgrade script between previous release and current build
 - TODO use rulsets in pg_pmwget wrappers
 - TODO Implement a garbage collector : Once a story reach frozen state it should be possible to reclaim storage space by replacing

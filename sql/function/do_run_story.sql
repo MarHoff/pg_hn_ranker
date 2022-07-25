@@ -3,7 +3,8 @@
 -- DROP PROCEDURE hn_ranker.do_run_story(text);
 
 CREATE OR REPLACE PROCEDURE hn_ranker.do_run_story(
-	hnr_ruleset text DEFAULT 'production'::text)
+  v_ts_run timestamptz,
+	hnr_ruleset text DEFAULT 'production_default'::text)
 LANGUAGE 'plpgsql'
 
 AS $BODY$
@@ -15,7 +16,7 @@ SELECT val INTO STRICT param FROM hn_ranker.rule WHERE ruleset_id=hnr_ruleset;
 RAISE NOTICE 'param: %', param;
 
 WITH
-  classify_fetch_now AS (SELECT * FROM  hn_ranker.build_stories_classify(now()::timestamptz, hnr_ruleset) WHERE fetch_now),
+  classify_fetch_now AS (SELECT * FROM  hn_ranker.build_stories_classify(v_ts_run, hnr_ruleset) WHERE fetch_now),
   get_items AS (SELECT * FROM hn_ranker.wget_items((SELECT array_agg(story_id) FROM classify_fetch_now))),
   insert_run_story AS (
     INSERT INTO hn_ranker.run_story(
@@ -50,7 +51,10 @@ INSERT INTO hn_ranker.error(ts_run, object, object_id, report)
 SELECT
 ts_run, 'run_story' as object, story_id::text object_id, row_to_json(get_items)::jsonb
 FROM insert_run_story LEFT JOIN get_items ON story_id=get_items.id
+--Keep in mind that status list is ordered such that new status weight the less
+--This filter then log all status equal or higher (worst) than deleted which can be confusing when you stumble onto
 WHERE insert_run_story.status >= 'deleted' OR NOT(get_items.retries = 0);
+
 END;
 $BODY$;
 

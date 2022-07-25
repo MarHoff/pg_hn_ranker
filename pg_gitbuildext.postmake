@@ -21,7 +21,6 @@ test_restore : test_deploy
 installcheck: test_deploy
 	sudo -u $(TESTUSER) psql -d $(TESTDATABASE) -c "CREATE EXTENSION IF NOT EXISTS pgtap;"
 	sudo -u $(TESTUSER) pg_prove -d $(TESTDATABASE) -v --pset tuples_only=1 $(TESTS)
-	sudo -u $(TESTUSER) psql -c "DROP DATABASE IF EXISTS $(TESTDATABASE);"
 
 splash :
 	@echo '****************************************************'

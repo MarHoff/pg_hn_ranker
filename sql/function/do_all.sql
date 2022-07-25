@@ -3,11 +3,15 @@
 -- DROP PROCEDURE hn_ranker.do_all(text);
 
 CREATE OR REPLACE PROCEDURE hn_ranker.do_all(
-	hnr_config text DEFAULT 'production'::text)
-LANGUAGE 'sql'
+	hnr_config text DEFAULT 'production_default'::text)
+LANGUAGE 'plpgsql'
 
 AS $BODY$
-CALL hn_ranker.do_run(hnr_config);
-CALL hn_ranker.do_run_story(hnr_config);
+DECLARE
+	ts_run timestamptz ;
+BEGIN
+ts_run := (SELECT hn_ranker.do_run(hnr_config));
+CALL hn_ranker.do_run_story(ts_run, hnr_config);
+END
 $BODY$;
 

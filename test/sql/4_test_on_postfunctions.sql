@@ -1,9 +1,10 @@
 --TODO Check that array conversion keep order
 BEGIN;
-SELECT plan(1);
+SELECT plan(2);
 
 SELECT pg_sleep(1);
-CALL hn_ranker.do_run();
+
+SELECT hn_ranker.do_run() ts INTO test_run;
 
 PREPARE revert_build_stories_ranks(timestamptz) AS 
 SELECT
@@ -16,10 +17,13 @@ PREPARE run_ranks(timestamptz) AS
 SELECT topstories, beststories, newstories FROM hn_ranker.run WHERE ts_run=$1;
 
 SELECT results_eq(
-    $$EXECUTE revert_build_stories_ranks(now()::timestamptz);$$,
-    $$EXECUTE run_ranks(now()::timestamptz);$$,
+    format($$EXECUTE revert_build_stories_ranks('%1$s'::timestamptz);$$,(SELECT ts FROM test_run)),
+    format($$EXECUTE run_ranks('%1$s'::timestamptz);$$,(SELECT ts FROM test_run)),
     'By aggregating result of build_stories_ranks for a given run we should be able to recreate run arrays'
 );
 
+CALL hn_ranker.do_all('production_default');
+SELECT lives_ok( 'SELECT * FROM hn_ranker.build_stories_classify();' , 'Call without parameter should work on most recent run after a run');
 SELECT * FROM finish();
+
 ROLLBACK;
