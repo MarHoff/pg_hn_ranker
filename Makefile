@@ -65,7 +65,7 @@ TABLE := $(addprefix sql/table/, $(addsuffix .sql, $(TABLE)))
 FUNCTION := check_time_window wget_rankings wget_items build_stories_ranks build_stories_status build_stories_classify do_run do_run_story do_all
 FUNCTION := $(addprefix sql/function/, $(addsuffix .sql, $(FUNCTION)))
 
-VIEW := run_story_stats diagnose_errors
+VIEW := stats_run stats_run_story diagnose_errors
 VIEW := $(addprefix sql/view/, $(addsuffix .sql, $(VIEW)))
 
 PREUPDATE := temp_create old_drop

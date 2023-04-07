@@ -3,7 +3,7 @@ SELECT plan(10);
 
 SELECT tables_are( 'hn_ranker', ARRAY['run', 'story', 'run_story', 'error', 'ruleset', 'rules']);
 
-SELECT views_are( 'hn_ranker', ARRAY['diagnose_errors', 'run_story_stats']);
+SELECT views_are( 'hn_ranker', ARRAY['diagnose_errors', 'stats_run' , 'stats_run_story']);
 
 SELECT types_are( 'hn_ranker', ARRAY['object','ranking','story_status'] );
 

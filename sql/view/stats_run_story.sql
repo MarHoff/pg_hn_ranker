@@ -1,6 +1,6 @@
--- View: hn_ranker.run_story_stats
+-- View: hn_ranker.stats_run_story
 
-CREATE VIEW hn_ranker.run_story_stats AS
+CREATE VIEW hn_ranker.stats_run_story AS
 SELECT run_story.ts_run ts_run,
     /* Broken since columns were removed from run story - Need fix!
 	format('%1$s/%2$s',count(*) FILTER (WHERE run_story.topstories_rank IS NOT NULL), COALESCE(array_length(run.topstories,1)::text,'error')) AS topstories,
