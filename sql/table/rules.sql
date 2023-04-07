@@ -3,10 +3,10 @@
 
 CREATE TABLE rules (
     ruleset_id text NOT NULL,
-    rule text NOT NULL,
+    id text NOT NULL,
     type_val text,
     val text,
-    CONSTRAINT rule_pkey PRIMARY KEY (ruleset_id, rule),
+    CONSTRAINT rule_pkey PRIMARY KEY (ruleset_id, id),
     CONSTRAINT rule_ruleset_id_fkey FOREIGN KEY (ruleset_id)
         REFERENCES ruleset (id) MATCH SIMPLE
         ON UPDATE CASCADE
@@ -14,7 +14,7 @@ CREATE TABLE rules (
 );
 
 
-INSERT INTO rules (ruleset_id, rule, type_val, val) (VALUES
+INSERT INTO rules (ruleset_id, id, type_val, val) (VALUES
 ('debug'::text, 'run_story_param', 'jsonb',
 $${
 "new_repeat":1,

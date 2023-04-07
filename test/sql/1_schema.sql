@@ -14,7 +14,7 @@ SELECT columns_are( 'hn_ranker', 'story', ARRAY['id','status']);
 SELECT columns_are( 'hn_ranker', 'run_story', ARRAY['ts_run','story_id','status','score','descendants','ts_payload']);
 SELECT columns_are( 'hn_ranker', 'error', ARRAY['ts_run','object','object_id','report']);
 SELECT columns_are( 'hn_ranker', 'ruleset', ARRAY['id']);
-SELECT columns_are( 'hn_ranker', 'rules', ARRAY['ruleset_id','rule','type_val','val']);
+SELECT columns_are( 'hn_ranker', 'rules', ARRAY['ruleset_id','id','type_val','val']);
 
 
 
