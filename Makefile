@@ -68,10 +68,10 @@ FUNCTION := $(addprefix sql/function/, $(addsuffix .sql, $(FUNCTION)))
 VIEW := stats_run stats_run_story diagnose_errors
 VIEW := $(addprefix sql/view/, $(addsuffix .sql, $(VIEW)))
 
-PREUPDATE := temp_create old_drop
+PREUPDATE := 1_rename_kept 2_drop
 PREUPDATE := $(addprefix sql/update_scripts/, $(addsuffix .sql, $(PREUPDATE)))
 
-POSTUPDATE := temp_migrate temp_drop
+POSTUPDATE := 3_migrate 4_clean
 POSTUPDATE := $(addprefix sql/update_scripts/, $(addsuffix .sql, $(POSTUPDATE)))
 
 
