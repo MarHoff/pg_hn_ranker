@@ -47,9 +47,9 @@ WITH
     ON classify_fetch_now.story_id=get_items.id
     RETURNING *
     )
-INSERT INTO hn_ranker.error(ts_run, object, object_id, report)
+INSERT INTO hn_ranker.error(ts_run, error_source, source_id, report)
 SELECT
-ts_run, 'run_story' as object, story_id::text object_id, row_to_json(get_items)::jsonb
+ts_run, 'run_story' as error_source, story_id::text source_id, row_to_json(get_items)::jsonb
 FROM insert_run_story LEFT JOIN get_items ON story_id=get_items.id
 --Keep in mind that status list is ordered such that new status weight the less
 --This filter then log all status equal or higher (worst) than deleted which can be confusing when you stumble onto

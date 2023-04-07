@@ -56,7 +56,7 @@ $(BUILD_UPDATE_SCRIPT) : $(BUILD_MAIN_SCRIPT)
 ##########################################################################################
 
 #Any 
-DOMAIN := ranking story_status object
+DOMAIN := ranking story_status error_source
 DOMAIN := $(addprefix sql/domain/, $(addsuffix .sql, $(DOMAIN)))
 
 TABLE := run story run_story error ruleset rules config_dump

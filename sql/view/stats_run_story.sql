@@ -24,6 +24,6 @@ SELECT run_story.ts_run ts_run,
 	count(*) AS total_count,
 	max(run_story.ts_payload)-min(run_story.ts_run) as fetch_duration
 FROM hn_ranker.run_story
-LEFT JOIN hn_ranker.error ON run_story.ts_run=error.ts_run AND error.object='run_story' AND run_story.story_id=error.object_id::bigint
+LEFT JOIN hn_ranker.error ON run_story.ts_run=error.ts_run AND error.error_source='run_story' AND run_story.story_id=error.source_id::bigint
 GROUP BY run_story.ts_run
 ORDER BY run_story.ts_run desc;

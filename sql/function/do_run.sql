@@ -34,8 +34,8 @@ SELECT
   FROM get_rankings
 RETURNING *)
 INSERT INTO hn_ranker.error(
-ts_run, object, object_id, report)
-SELECT insert_run.ts_run ts_run, 'run' as object, get_rankings.id::text object_id, row_to_json(get_rankings)::jsonb
+ts_run, error_source, source_id, report)
+SELECT insert_run.ts_run ts_run, 'run' as error_source, get_rankings.id::text source_id, row_to_json(get_rankings)::jsonb
 FROM insert_run, get_rankings
 WHERE get_rankings.payload IS NULL OR NOT(get_rankings.retries = 0);
 
