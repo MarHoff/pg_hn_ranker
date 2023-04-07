@@ -41,7 +41,7 @@ BEGIN
 --Would be great to move next section in a subroutine upon next refactoring
 RAISE DEBUG 'hnr_ruleset: %', hnr_ruleset;
 
-SELECT val INTO STRICT rule FROM hn_ranker.rule WHERE rule.ruleset_id=hnr_ruleset AND rule.rule='run_story_param';
+SELECT val INTO STRICT rule FROM hn_ranker.rules WHERE rules.ruleset_id=hnr_ruleset AND rules.rule='run_story_param';
 IF rule IS NULL
   THEN RAISE EXCEPTION 'rule "run_story_param" of ruleset "%" can''t be NULL!', hnr_ruleset;
   ELSE RAISE DEBUG 'run_story_param: %', rule;

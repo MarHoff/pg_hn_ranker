@@ -59,7 +59,7 @@ $(BUILD_UPDATE_SCRIPT) : $(BUILD_MAIN_SCRIPT)
 DOMAIN := ranking story_status object
 DOMAIN := $(addprefix sql/domain/, $(addsuffix .sql, $(DOMAIN)))
 
-TABLE := run story run_story error ruleset rule config_dump
+TABLE := run story run_story error ruleset rules config_dump
 TABLE := $(addprefix sql/table/, $(addsuffix .sql, $(TABLE)))
 
 FUNCTION := check_time_window wget_rankings wget_items build_stories_ranks build_stories_status build_stories_classify do_run do_run_story do_all

@@ -2,6 +2,7 @@
 
 ## Version 0.1.6 (next)
 - Schema change! Adding extversion and ruleset_id to the run table to help merging data from distinct instances
+  Also renaming table 'rule' to 'rules' to prevent use of auoting in some contextes 
 
 - As timestamp is now the id building a more robust way to propagate ts_run from do_run() to do_run_story()
   It is now explicit while past behavior relied on the now() function returning same value inside a transaction.

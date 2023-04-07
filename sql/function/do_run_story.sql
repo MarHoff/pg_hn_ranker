@@ -12,7 +12,7 @@ DECLARE
 param jsonb;
 BEGIN
 RAISE NOTICE 'hnr_ruleset: %', hnr_ruleset;
-SELECT val INTO STRICT param FROM hn_ranker.rule WHERE ruleset_id=hnr_ruleset;
+SELECT val INTO STRICT param FROM hn_ranker.rules WHERE ruleset_id=hnr_ruleset;
 RAISE NOTICE 'param: %', param;
 
 WITH

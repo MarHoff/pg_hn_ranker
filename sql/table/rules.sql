@@ -1,7 +1,7 @@
 -- Name: rules; Type: TABLE; Schema: hn_ranker; Owner: -
 --
 
-CREATE TABLE rule (
+CREATE TABLE rules (
     ruleset_id text NOT NULL,
     rule text NOT NULL,
     type_val text,
@@ -14,7 +14,7 @@ CREATE TABLE rule (
 );
 
 
-INSERT INTO rule (ruleset_id, rule, type_val, val) (VALUES
+INSERT INTO rules (ruleset_id, rule, type_val, val) (VALUES
 ('debug'::text, 'run_story_param', 'jsonb',
 $${
 "new_repeat":1,
