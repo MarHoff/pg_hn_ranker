@@ -1,6 +1,6 @@
 #This Makefile is a standard pg_gitbuildext building framework for a PostgreSQL extension
 #Dont edit this file directly edit the Makefile instead
-#Copyright Martin Hoffmann 2019-2020 - Version 0.3
+#Copyright Martin Hoffmann 2019-2020 - Version 0.3.1
 
 build : splash $(BUILD_EXTENSION_CONTROL) $(BUILD_MAIN_SCRIPT) $(BUILD_UPDATE_SCRIPT)
 
@@ -28,6 +28,7 @@ splash :
 	@echo 'Powered by pg_gitbuildext building framework Version 0.3'
 	@echo '****************************************************'
 	@echo 'Commit $(COMMIT) on branch $(BRANCH)'
+	@echo 'On host : $(MAKEHOST)'
 	@echo '****************************************************'
 	@echo '              EXTENSION : $(EXTENSION)'
 	@echo '       EXTENSION_SCHEMA : $(EXTENSION_SCHEMA)'
