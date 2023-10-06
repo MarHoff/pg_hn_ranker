@@ -36,10 +36,10 @@ FROM
 -------------------------------------------------------------- Change!
 INSERT INTO hn_ranker.error
 (
-  ts_run, "object", object_id, report
+  ts_run, error_source, source_id, report
 )
 SELECT
-  ts_run, error_source, source_id, report
+  ts_run, "object", object_id, report
 FROM
   error_old
 ;

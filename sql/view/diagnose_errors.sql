@@ -24,4 +24,4 @@ LEFT JOIN hn_ranker.run_story rs
 	ON e.error_source='run_story' AND e.ts_run=rs.ts_run AND e.source_id::text=rs.story_id::text
 JOIN hn_ranker.run ON e.ts_run=run.ts_run
 --WHERE error_source='run_story' --AND retries = 0
-ORDER BY error_source, ts_run, source_id
+ORDER BY error_source, ts_run, source_id;

@@ -15,7 +15,7 @@ ALTER TABLE ruleset RENAME TO ruleset_old;
 ALTER TABLE rule RENAME TO rule_old;
 
 --Casting colums using extension specific type to standard type
-ALTER TABLE error_old ALTER COLUMN error_source TYPE text; 
+ALTER TABLE error_old ALTER COLUMN "object" TYPE text; 
 ALTER TABLE run_story_old ALTER COLUMN status TYPE text; 
 ALTER TABLE story_old ALTER COLUMN status TYPE text; 
 
