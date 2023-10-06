@@ -1,6 +1,6 @@
 -- FUNCTION: hn_ranker.time_window(timestamp with time zone, timestamp with time zone, integer)
 
-CREATE OR REPLACE FUNCTION hn_ranker.check_time_window(
+CREATE FUNCTION hn_ranker.check_time_window(
 	t_new timestamp with time zone,
 	t_old timestamp with time zone,
 	t_window integer)

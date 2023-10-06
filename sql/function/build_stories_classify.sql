@@ -2,7 +2,7 @@
 
 -- DROP FUNCTION hn_ranker.build_stories_classify(text);
 
-CREATE OR REPLACE FUNCTION hn_ranker.build_stories_classify( v_ts_run timestamptz DEFAULT NULL, hnr_ruleset text DEFAULT 'production_default'::text )
+CREATE FUNCTION hn_ranker.build_stories_classify( v_ts_run timestamptz DEFAULT NULL, hnr_ruleset text DEFAULT 'production_default'::text )
 RETURNS TABLE (
   ts_run timestamptz,
   story_id bigint,

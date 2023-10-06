@@ -2,7 +2,7 @@
 
 -- DROP FUNCTION hn_ranker.build_stories_status(text);
 
-CREATE OR REPLACE FUNCTION hn_ranker.build_stories_status(v_ts_run timestamptz DEFAULT NULL )
+CREATE FUNCTION hn_ranker.build_stories_status(v_ts_run timestamptz DEFAULT NULL )
 RETURNS TABLE (
   ts_run timestamptz,
   story_id bigint,

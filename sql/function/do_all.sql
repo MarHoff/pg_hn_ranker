@@ -2,7 +2,7 @@
 
 -- DROP PROCEDURE hn_ranker.do_all(text);
 
-CREATE OR REPLACE PROCEDURE hn_ranker.do_all(
+CREATE PROCEDURE hn_ranker.do_all(
 	hnr_config text DEFAULT 'production_default'::text)
 LANGUAGE 'plpgsql'
 

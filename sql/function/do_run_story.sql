@@ -2,7 +2,7 @@
 
 -- DROP PROCEDURE hn_ranker.do_run_story(text);
 
-CREATE OR REPLACE PROCEDURE hn_ranker.do_run_story(
+CREATE PROCEDURE hn_ranker.do_run_story(
   v_ts_run timestamptz,
 	hnr_ruleset text DEFAULT 'production_default'::text)
 LANGUAGE 'plpgsql'

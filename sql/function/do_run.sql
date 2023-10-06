@@ -2,7 +2,7 @@
 
 -- DROP FUNCTION hn_ranker.do_run(text);
 
-CREATE OR REPLACE FUNCTION hn_ranker.do_run(
+CREATE FUNCTION hn_ranker.do_run(
 	hnr_config text DEFAULT 'production_default'::text)
 RETURNS timestamptz
 LANGUAGE 'plpgsql'

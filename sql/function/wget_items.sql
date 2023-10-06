@@ -1,6 +1,6 @@
 -- FUNCTION: hn_ranker.wget_items(bigint[])
 
-CREATE OR REPLACE FUNCTION hn_ranker.wget_items(
+CREATE FUNCTION hn_ranker.wget_items(
   id_array bigint[]
 )
 RETURNS TABLE (

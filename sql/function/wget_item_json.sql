@@ -1,6 +1,6 @@
 -- Function: item_json(text, integer, boolean, numeric, numeric, text, text, text)
 
-CREATE OR REPLACE FUNCTION hn_ranker.item_json(
+CREATE FUNCTION hn_ranker.item_json(
     id bigint
 )
   RETURNS jsonb AS
