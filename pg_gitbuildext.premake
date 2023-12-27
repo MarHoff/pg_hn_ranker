@@ -1,6 +1,6 @@
 #This Makefile is a standard pg_gitbuildext building framework for a PostgreSQL extension
 #Dont edit this file directly edit the Makefile instead
-#Copyright Martin Hoffmann 2019-2023 - Version 0.3.2
+#Copyright Martin Hoffmann 2019-2023 - Version 0.3.3
 
 SHELL = /bin/sh
 DATA = $(wildcard releases/*.sql)
