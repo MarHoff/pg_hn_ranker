@@ -17,7 +17,7 @@ INSERT INTO run_story
   ts_run, story_id, status, score, descendants, ts_payload
 )
 SELECT
-  ts_run, story_id, status, score, descendants, ts_payload
+  ts_run, story_id, status::hn_ranker.story_status, score, descendants, ts_payload
 FROM
   run_story_old
 ;
@@ -28,7 +28,7 @@ INSERT INTO hn_ranker.story
   id, status
 )
 SELECT
-  id, status
+  id, status::hn_ranker.story_status
 FROM
   story_old
 ;
@@ -39,7 +39,7 @@ INSERT INTO hn_ranker.error
   ts_run, error_source, source_id, report
 )
 SELECT
-  ts_run, "object", object_id, report
+  ts_run, "object"::hn_ranker.error_source, object_id, report
 FROM
   error_old
 ;
@@ -60,12 +60,12 @@ WHERE
 -------------------------------------------------------------- Change!
 INSERT INTO hn_ranker.rules
 (
-  ruleset_id, "rule", type_val, val
+  ruleset_id, id, type_val, val
 )
 SELECT
-  ruleset_id, id, type_val, val
+  ruleset_id, "rule", type_val, val
 FROM
-  "rule_old"
+  "rules_old"
 WHERE
   ruleset_id NOT IN ('debug','production')
 ;

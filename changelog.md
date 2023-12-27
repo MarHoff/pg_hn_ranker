@@ -9,7 +9,8 @@
 
 - Rework tests to be sorted by name and adjust to schema changes + don't drop database after tests for debug (still dropped before)
 
-- TODO Add a target for and Postgresql Extension upgrade script between previous release and current build
+- Add a target for and Postgresql Extension upgrade script between previous release and current build
+
 - TODO use rulsets in pg_pmwget wrappers
 - TODO Implement a garbage collector : Once a story reach frozen state it should be possible to reclaim storage space by replacing
 - TODO Investigate opportunity to introduce submodules for pm_wget and pg_gitbuildext

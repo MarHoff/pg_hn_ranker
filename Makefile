@@ -35,11 +35,11 @@ $(BUILD_EXTENSION_CONTROL) : .FORCE
 	echo "requires = 'plsh, pmwget'" >> $@
 
 #Recipe to build current release instalation script
-$(BUILD_MAIN_SCRIPT) : $(DOMAIN) $(TABLE) $(FUNCTION) $(VIEW)
+$(BUILD_MAIN_SCRIPT) : $(DOMAIN) $(TABLE) $(ROUTINE) $(VIEW)
 	@echo 'Building $(BUILD_MAIN_SCRIPT)'
 	@cat $(DOMAIN) > $@ && \
 	cat $(TABLE) >> $@ && \
-	cat $(FUNCTION) >> $@ && \
+	cat $(ROUTINE) >> $@ && \
 	cat $(VIEW) >> $@
 
 #Recipe to build upgrade script from last release to current release
@@ -62,8 +62,8 @@ DOMAIN := $(addprefix sql/domain/, $(addsuffix .sql, $(DOMAIN)))
 TABLE := run story run_story error ruleset rules config_dump
 TABLE := $(addprefix sql/table/, $(addsuffix .sql, $(TABLE)))
 
-FUNCTION := check_time_window wget_rankings wget_items build_stories_ranks build_stories_status build_stories_classify do_run do_run_story do_all
-FUNCTION := $(addprefix sql/function/, $(addsuffix .sql, $(FUNCTION)))
+ROUTINE := check_time_window wget_rankings wget_items build_stories_ranks build_stories_status build_stories_classify do_run do_run_story do_all
+ROUTINE := $(addprefix sql/routine/, $(addsuffix .sql, $(ROUTINE)))
 
 VIEW := stats_run stats_run_story diagnose_errors
 VIEW := $(addprefix sql/view/, $(addsuffix .sql, $(VIEW)))
