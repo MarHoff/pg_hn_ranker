@@ -1,8 +1,8 @@
 #This Makefile is a standard pg_gitbuildext building framework for a PostgreSQL extension
 #Dont edit this file directly edit the Makefile instead
-#Copyright Martin Hoffmann 2019-2020 - Version 0.3
+#Copyright Martin Hoffmann 2019-2023 - Version 0.3.3
 
-build : splash parameters $(BUILD_EXTENSION_CONTROL) $(BUILD_MAIN_SCRIPT) $(BUILD_UPDATE_SCRIPT)
+build : splash $(BUILD_EXTENSION_CONTROL) $(BUILD_MAIN_SCRIPT) $(BUILD_UPDATE_SCRIPT)
 
 
 test_backup :
@@ -15,22 +15,23 @@ test_deploy :
 	sudo -u $(TESTUSER) psql -c "CREATE DATABASE $(TESTDATABASE);"
 	sudo -u $(TESTUSER) psql -d $(TESTDATABASE) -c "CREATE EXTENSION $(EXTENSION) VERSION '$(BUILD)' CASCADE;" || sudo -u $(TESTUSER) psql -d $(TESTDATABASE) -c "CREATE EXTENSION plsh; CREATE EXTENSION pmwget; CREATE SCHEMA IF NOT EXISTS $(EXTENSION_SCHEMA)" -f $(BUILD_MAIN_SCRIPT)
 
-test_restore : test_deploy
+test_restore :
 	sudo -u $(TESTUSER) pg_restore -a -d $(TESTDATABASE) $(TESTDATABASE).bak
 
-installcheck: test_deploy
+test_check :
 	sudo -u $(TESTUSER) psql -d $(TESTDATABASE) -c "CREATE EXTENSION IF NOT EXISTS pgtap;"
 	sudo -u $(TESTUSER) pg_prove -d $(TESTDATABASE) -v --pset tuples_only=1 $(TESTS)
-	sudo -u $(TESTUSER) psql -c "DROP DATABASE IF EXISTS $(TESTDATABASE);"
+
+installcheck : test_deploy test_check
+	@echo 'Full installcheck have been run'
 
 splash :
 	@echo '****************************************************'
 	@echo 'Build system for PostgreSQL extension $(EXTENSION) '
 	@echo 'Powered by pg_gitbuildext building framework Version 0.3'
 	@echo '****************************************************'
-
-parameters: splash
 	@echo 'Commit $(COMMIT) on branch $(BRANCH)'
+	@echo 'On host : $(MAKEHOST)'
 	@echo '****************************************************'
 	@echo '              EXTENSION : $(EXTENSION)'
 	@echo '       EXTENSION_SCHEMA : $(EXTENSION_SCHEMA)'

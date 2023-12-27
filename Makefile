@@ -12,8 +12,8 @@ EXTENSION := pg_hn_ranker
 EXTENSION_SCHEMA := hn_ranker
 
 #Versioning management
-LASTRELEASE    := 0.1.4
-CURRENTRELEASE := 0.1.5
+LASTRELEASE    := 0.1.5
+CURRENTRELEASE := 0.1.6
 
 #Parameters for deploying test database
 TESTDATABASE := pg_hn_ranker_test
@@ -35,18 +35,20 @@ $(BUILD_EXTENSION_CONTROL) : .FORCE
 	echo "requires = 'plsh, pmwget'" >> $@
 
 #Recipe to build current release instalation script
-$(BUILD_MAIN_SCRIPT) : $(DOMAIN) $(TABLE) $(FUNCTION) $(VIEW)
+$(BUILD_MAIN_SCRIPT) : $(DOMAIN) $(TABLE) $(ROUTINE) $(VIEW)
 	@echo 'Building $(BUILD_MAIN_SCRIPT)'
 	@cat $(DOMAIN) > $@ && \
 	cat $(TABLE) >> $@ && \
-	cat $(FUNCTION) >> $@ && \
+	cat $(ROUTINE) >> $@ && \
 	cat $(VIEW) >> $@
 
 #Recipe to build upgrade script from last release to current release
 #Keep recipe empty if not needed
-$(BUILD_UPDATE_SCRIPT) :
+$(BUILD_UPDATE_SCRIPT) : $(BUILD_MAIN_SCRIPT)
 	@echo 'Building $(BUILD_UPDATE_SCRIPT)'
-	@echo 'No upgrade script defined yet!'
+	@cat $(PREUPDATE) > $@ && \
+	cat $(BUILD_MAIN_SCRIPT) >> $@ && \
+	cat $(POSTUPDATE) >> $@
 
 
 ##########################################################################################
@@ -54,17 +56,23 @@ $(BUILD_UPDATE_SCRIPT) :
 ##########################################################################################
 
 #Any 
-DOMAIN := ranking story_status object
+DOMAIN := ranking story_status error_source
 DOMAIN := $(addprefix sql/domain/, $(addsuffix .sql, $(DOMAIN)))
 
-TABLE := run story run_story error ruleset rule config_dump
+TABLE := run story run_story error ruleset rules config_dump
 TABLE := $(addprefix sql/table/, $(addsuffix .sql, $(TABLE)))
 
-FUNCTION := check_time_window max_id wget_rankings wget_items build_stories_ranks build_stories_status build_stories_classify do_run do_run_story do_all
-FUNCTION := $(addprefix sql/function/, $(addsuffix .sql, $(FUNCTION)))
+ROUTINE := check_time_window wget_rankings wget_items build_stories_ranks build_stories_status build_stories_classify do_run do_run_story do_all
+ROUTINE := $(addprefix sql/routine/, $(addsuffix .sql, $(ROUTINE)))
 
-VIEW := run_story_stats diagnose_errors
+VIEW := stats_run stats_run_story diagnose_errors
 VIEW := $(addprefix sql/view/, $(addsuffix .sql, $(VIEW)))
+
+PREUPDATE := 1_rename_drop
+PREUPDATE := $(addprefix sql/update_scripts/, $(addsuffix .sql, $(PREUPDATE)))
+
+POSTUPDATE := 2_migrate 3_clean
+POSTUPDATE := $(addprefix sql/update_scripts/, $(addsuffix .sql, $(POSTUPDATE)))
 
 
 #This line include post-script that perform the actual build & deployement + link PGXS

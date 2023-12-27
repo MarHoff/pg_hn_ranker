@@ -1,6 +1,6 @@
 --TODO Check that array conversion keep order
 BEGIN;
-SELECT plan(3);
+SELECT plan(4);
 
 PREPARE wget_rankings(text[]) AS 
 SELECT to_json(payload)::text as payload FROM hn_ranker.wget_rankings($1::hn_ranker.ranking[]);
@@ -24,6 +24,7 @@ SELECT results_eq(
     'hn_ranker.wget_rankings() call for newstories should return same result as as bare pmwget call'
 );
 
+SELECT lives_ok( 'SELECT * FROM hn_ranker.build_stories_classify();' , 'Call without parameter should work on most recent run even before any run');
 
 SELECT * FROM finish();
 ROLLBACK;
