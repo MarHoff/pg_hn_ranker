@@ -1,6 +1,6 @@
 #This Makefile is a standard pg_gitbuildext building framework for a PostgreSQL extension
 #Dont edit this file directly edit the Makefile instead
-#Copyright Martin Hoffmann 2019-2020 - Version 0.3.1
+#Copyright Martin Hoffmann 2019-2023 - Version 0.3.2
 
 SHELL = /bin/sh
 DATA = $(wildcard releases/*.sql)
@@ -11,7 +11,7 @@ COMMIT := $(shell git rev-parse --short HEAD)
 BUILD = $(if $(findstring $(BRANCH), main master release),$(CURRENTRELEASE),dev_$(COMMIT))
 MAKEHOST := $(shell hostname)
 
-.PHONY : test_backup test_deploy test_restore installcheck splash .FORCE
+.PHONY : test_backup test_deploy test_restore check installcheck splash .FORCE
 
 usage : splash
 	@echo 'Usage :'
@@ -21,6 +21,7 @@ usage : splash
 	@echo '   "make test_deploy" : wipe and deploy extension for developement purpose in a test database'
 	@echo '   "make test_backup" : backup data-only dump of the extension FROM test database'
 	@echo '  "make test_restore" : restore data-only dump of the extension TO test database'
+	@echo '    "make test_check" : run all tests with pg_prove in test database'
 	@echo '  "make installcheck" : deploy test database and run all tests with pg_prove'
 	@echo
 

@@ -1,6 +1,6 @@
 #This Makefile is a standard pg_gitbuildext building framework for a PostgreSQL extension
 #Dont edit this file directly edit the Makefile instead
-#Copyright Martin Hoffmann 2019-2020 - Version 0.3.1
+#Copyright Martin Hoffmann 2019-2023 - Version 0.3.2
 
 build : splash $(BUILD_EXTENSION_CONTROL) $(BUILD_MAIN_SCRIPT) $(BUILD_UPDATE_SCRIPT)
 
@@ -18,9 +18,12 @@ test_deploy :
 test_restore : test_deploy
 	sudo -u $(TESTUSER) pg_restore -a -d $(TESTDATABASE) $(TESTDATABASE).bak
 
-installcheck: test_deploy
+test_check :
 	sudo -u $(TESTUSER) psql -d $(TESTDATABASE) -c "CREATE EXTENSION IF NOT EXISTS pgtap;"
 	sudo -u $(TESTUSER) pg_prove -d $(TESTDATABASE) -v --pset tuples_only=1 $(TESTS)
+
+installcheck : test_deploy test_check
+	@echo 'Full installcheck have been run'
 
 splash :
 	@echo '****************************************************'
