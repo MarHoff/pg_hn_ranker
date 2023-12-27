@@ -54,7 +54,7 @@ SELECT
 FROM
   ruleset_old
 WHERE
-  id NOT IN ('debug','production')
+  id NOT IN ('debug','production','production_default')
 ;
 
 -------------------------------------------------------------- Change!
@@ -67,6 +67,6 @@ SELECT
 FROM
   "rules_old"
 WHERE
-  ruleset_id NOT IN ('debug','production')
+  ruleset_id NOT IN ('debug','production','production_default')
 ;
 
