@@ -6,7 +6,7 @@ INSERT INTO run
   ts_run, topstories, beststories, newstories, ts_end, extversion, ruleset_id
 )
 SELECT
-  ts_run, topstories, beststories, newstories, ts_end, NULL::text , NULL::text
+  ts_run, topstories, beststories, newstories, ts_end, '0.1.5'::text , 'unknown'::text
 FROM
   run_old
 ;
