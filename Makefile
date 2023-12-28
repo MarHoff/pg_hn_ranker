@@ -13,7 +13,7 @@ EXTENSION_SCHEMA := hn_ranker
 
 #Versioning management
 LASTRELEASE    := 0.1.5
-CURRENTRELEASE := 0.1.6
+CURRENTRELEASE := 0.2.0
 
 #Parameters for deploying test database
 TESTDATABASE := pg_hn_ranker_test

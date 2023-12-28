@@ -1,6 +1,13 @@
 # Changelog
 
-## Version 0.1.6
+
+## Version (next)
+- TODO use rulsets in pg_pmwget wrappers
+- TODO Implement a garbage collector : Once a story reach frozen state it should be possible to reclaim storage space by replacing
+- TODO Investigate opportunity to introduce submodules for pm_wget and pg_gitbuildext
+
+
+## Version 0.2.0
 - BREAKING Schema change! Adding extversion and ruleset_id to the run table to help merging data from distinct instances
   Also renaming table 'rule' to 'rules' to prevent use of auoting in some contextes 
 
@@ -12,11 +19,6 @@
   It is now explicit while past behavior relied on the now() function returning same value inside a transaction.
 
 - Rework tests to be sorted by name and adjust to schema changes + don't drop database after tests for debug (still dropped before)
-
-
-- TODO use rulsets in pg_pmwget wrappers
-- TODO Implement a garbage collector : Once a story reach frozen state it should be possible to reclaim storage space by replacing
-- TODO Investigate opportunity to introduce submodules for pm_wget and pg_gitbuildext
 
 
 ## Version 0.1.5
