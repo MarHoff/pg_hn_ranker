@@ -10,5 +10,5 @@ CREATE TABLE ruleset (
 
 INSERT INTO ruleset (id) (VALUES
 ('debug'),
-('production')
+('production_default')
 );

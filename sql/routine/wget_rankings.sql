@@ -1,6 +1,6 @@
 -- FUNCTION: hn_ranker.wget_rankings(extschema@.ranking[])
 
-CREATE OR REPLACE FUNCTION hn_ranker.wget_rankings(
+CREATE FUNCTION hn_ranker.wget_rankings(
   ranking_array hn_ranker.ranking[]
 )
 RETURNS TABLE (
